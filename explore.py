@@ -64,7 +64,7 @@ plt.title("Avg Number of cyclist per day")
 plt.xlabel("Days of the week")
 plt.ylabel("Avg Number of cyclist")
 #plt.savefig("data/plot_daily.png")
-plt.show()
+#plt.show()
 
 # for monthly
 df_clean["month"]=df_clean["date"].dt.month
@@ -92,4 +92,28 @@ plt.title("Avg Number of cyclist per month")
 plt.xlabel("Month")
 plt.ylabel("Avg number of cyclist")
 #plt.savefig("data/plot_monthly.png")
+#plt.show()
+
+#finding which 13 streets has the highest average daily
+
+street_avg= df_clean.groupby("road_name")["n"].mean().astype(int)
+print(street_avg)
+
+street_avg = street_avg.reset_index()
+street_avg.columns=["road_name", "avg_cyclist"]
+print(street_avg)
+
+
+#ploting horizontal bar chat for avg cyclist in 13 streets
+plt.style.use("seaborn-v0_8")
+plt.figure(figsize=(12, 5))
+
+highest_street_name= ["Dr. Louises Bro ( ml. Nørrebrogade og Frederiksborggade)","Frederikssundsvej","Torvegade"]
+colors =["tomato" if name in highest_street_name else "steelblue" for name in street_avg["road_name"]]
+plt.barh(street_avg["road_name"], street_avg["avg_cyclist"],color= colors)
+plt.title("Avg No of cyclist in 13 streets")
+plt.xlabel("Avg no of cyclist")
+plt.ylabel("Street Names")
+plt.tight_layout()
+plt.savefig("data/plot_street.png")
 plt.show()
