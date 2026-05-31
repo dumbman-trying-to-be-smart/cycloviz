@@ -1,7 +1,8 @@
 import pandas as pd
 # reading the total_rides.csv file
 df = pd.read_csv("data/total_rides.csv")
-
+df.shape
+print(df["road_name"])
 # removing the null value (cleaning the dataset)
 df_clean = df.dropna()
 print(df_clean)

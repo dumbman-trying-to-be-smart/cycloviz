@@ -72,4 +72,13 @@ cluster_names={
 }
 
 hourly_profiles["cluster_name"]= hourly_profiles["cluster"].map(cluster_names)
+
 print(hourly_profiles[["cluster","cluster_name"]])
+print(cluster_profiles[[8,16]])
+
+from sklearn.metrics import silhouette_score
+
+score = silhouette_score(profiles_normalized, kmeans.labels_)
+print(f"Silhouette score: {score:.3f}")
+
+hourly_profiles[["cluster", "cluster_name"]].to_csv("data/clusters.csv")

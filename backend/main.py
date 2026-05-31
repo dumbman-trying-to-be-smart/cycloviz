@@ -1,0 +1,41 @@
+from fastapi import FastAPI
+import pandas as pd
+
+
+df = pd.read_csv("data/total_rides.csv")
+cluster= pd.read_csv("data/clusters.csv")
+df_clean = df.dropna()
+
+app = FastAPI()
+
+@app.get("/")
+def home():
+    return {"message":"Welcome to CycloViz API"}
+
+@app.get("/sensors")
+def get_sensors():
+    streets= df_clean["road_name"].unique().tolist()
+    return {"sensors" : streets}
+
+@app.get("/sensors/{street_name}")
+def get_street(street_name: str):
+    # Filter data for this street
+    street_data = df_clean[df_clean["road_name"] == street_name]
+
+    #check if street exists
+    if street_data.empty:
+        return {"error": "Street not found"}
+    
+    # Calculate average cyclists
+    avg_cyclists= round(street_data["n"].mean())
+
+    # Calculate total daily average
+    daily_avg = round(street_data.groupby("date")["n"].sum().mean())
+
+    category = cluster[cluster["road_name"] == street_name]["cluster_name"].iloc[0]
+    return {
+        "street": street_name,
+        "avg_cyclists_per_hour": avg_cyclists,
+        "avg_daily_total": daily_avg,
+        "cluster": category
+    }
