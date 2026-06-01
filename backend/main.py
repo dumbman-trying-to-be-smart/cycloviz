@@ -39,3 +39,37 @@ def get_street(street_name: str):
         "avg_daily_total": daily_avg,
         "cluster": category
     }
+
+@app.get("/clusters")
+def get_clusters():
+    return {"cluster": cluster[["road_name","cluster_name"]].to_dict("records")}
+
+@app.get("/cluster/{cluster_name}")
+
+def get_category(cluster_name: str):
+    cluster_data = cluster[cluster["cluster_name"]== cluster_name]
+
+    if cluster_data.empty:
+        return {"Error": "No cluster found."}
+    
+    return {"street_names": cluster_data["road_name"].to_list()}
+
+@app.get("/compare")
+def compare_streets(street_a: str, street_b: str):
+    result = {}
+    for key, street in [("street_a", street_a), ("street_b", street_b)]:
+        data = df_clean[df_clean["road_name"] == street]
+        if data.empty:
+            return {"error": f"{street} not found"}
+        result[key] = {
+            "street": street,
+            "avg_cyclists_per_hour": round(data["n"].mean()),
+            "avg_daily_total": round(data.groupby("date")["n"].sum().mean()),
+            "cluster": cluster[cluster["road_name"] == street]["cluster_name"].iloc[0]
+        }
+    return result
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
