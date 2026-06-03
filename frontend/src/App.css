@@ -11,7 +11,8 @@
 }
 
 .main-content{
-    padding: 16px;
+    overflow: hidden;
+    height: 100vh;
 
 }
 
