@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 import pandas as pd
+from fastapi.middleware.cors import CORSMiddleware
 
 
 df = pd.read_csv("data/total_rides.csv")
@@ -7,6 +8,13 @@ cluster= pd.read_csv("data/clusters.csv")
 df_clean = df.dropna()
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def home():
