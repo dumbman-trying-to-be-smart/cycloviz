@@ -1,4 +1,6 @@
+
 function ClustersView(){
+
     return(
         <div>
             <h2>Clusters View</h2>

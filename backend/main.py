@@ -7,6 +7,8 @@ df = pd.read_csv("data/total_rides.csv")
 cluster= pd.read_csv("data/clusters.csv")
 df_clean = df.dropna()
 
+df_clean["hour"] = df_clean["time"].str.split("-").str[0].astype(int)
+
 app = FastAPI()
 
 app.add_middleware(
@@ -76,6 +78,19 @@ def compare_streets(street_a: str, street_b: str):
             "cluster": cluster[cluster["road_name"] == street]["cluster_name"].iloc[0]
         }
     return result
+
+@app.get("/sensors/{street_name}/hourly")
+def get_hourly(street_name:str):
+    street_data = df_clean[df_clean["road_name"] == street_name]
+
+    if street_data.empty:
+        return {"error": "Street not found "}
+    
+    hourly= street_data.groupby("hour")["n"].mean().round().astype(int)
+    hourly= hourly.reset_index()
+    hourly.columns =["hour", "avg_cyclists"]
+
+    return{"hourly": hourly.to_dict("records")}
 
 
 @app.get("/health")
