@@ -29,20 +29,29 @@ const streets = [
   { label: "Roskildevej", value: "Roskildevej" },
 ]
 
+const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
 function AnalysisView() {
   const [selectedStreet, setSelectedStreet] = useState("Torvegade")
   const [streetData, setStreetData] = useState(null)
   const [hourlyData, setHourlyData] = useState([])
+  const [dailyData, setDailyData] =useState([])
+  const [monthlyData, setMonthlyData] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     setLoading(true)
     Promise.all([
       axios.get(`http://localhost:8000/sensors/${encodeURIComponent(selectedStreet)}`),
-      axios.get(`http://localhost:8000/sensors/${encodeURIComponent(selectedStreet)}/hourly`)
-    ]).then(([streetRes, hourlyRes]) => {
+      axios.get(`http://localhost:8000/sensors/${encodeURIComponent(selectedStreet)}/hourly`),
+      axios.get(`http://localhost:8000/sensors/${encodeURIComponent(selectedStreet)}/daily`),
+      axios.get(`http://localhost:8000/sensors/${encodeURIComponent(selectedStreet)}/monthly`)
+    ]).then(([streetRes, hourlyRes, dailyRes, monthlyRes]) => {
       setStreetData(streetRes.data)
       setHourlyData(hourlyRes.data.hourly)
+      setDailyData(dailyRes.data.daily)
+      setMonthlyData(monthlyRes.data.monthly)
       setLoading(false)
     })
   }, [selectedStreet])
@@ -52,7 +61,7 @@ function AnalysisView() {
   const chartData = {
     labels: hourlyData.map(d => `${d.hour}:00`),
     datasets: [{
-    label: "Avg cyclists",
+    labels: "Avg cyclists",
     data: hourlyData.map(d => d.avg_cyclists),
     backgroundColor: hourlyData.map(d =>
         d.hour === 8 || d.hour === 16 ? "#185FA5" : "#B5D4F4"
@@ -61,6 +70,32 @@ function AnalysisView() {
     borderSkipped: false,
     }]
   }
+
+  const dailyChartData ={
+    labels: dailyData.map (d => dayNames[d.day]),
+    datasets:[{
+      label: "Avg cyclists",
+      data: dailyData.map(d => d.avg_cyclists),
+      backgroundColor: dailyData.map(d => 
+        d.day === 5 || d.day === 6 ? "#EF9F27" : "#185FA5"
+      ),
+      borderRadius:4
+    }]
+
+  }
+
+  const monthlyChartData ={
+    labels: monthlyData.map(m => monthNames[m.month - 1]),
+    datasets:[{
+      label: "Avg cyclists",
+      data: monthlyData.map(m => m.avg_cyclists),
+      backgroundColor: monthlyData.map(d =>
+        d.month >= 6 && d.month <= 8 ? "#185FA5" : "#B5D4F4"
+      ),
+      borderRadius: 4,
+    }]
+  }
+
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -126,6 +161,15 @@ function AnalysisView() {
 
       <div className="chart-container">
         <Bar data={chartData} options={chartOptions} />
+      </div>
+      <div className="chart-container">
+        <p className="chart-title">Average cyclists by day of week</p>
+        <Bar data={dailyChartData} options={chartOptions} />
+      </div>
+
+      <div className="chart-container">
+        <p className="chart-title">Average cyclists by month</p>
+        <Bar data={monthlyChartData} options={chartOptions} />
       </div>
     </div>
   )

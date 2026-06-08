@@ -8,6 +8,9 @@ cluster= pd.read_csv("data/clusters.csv")
 df_clean = df.dropna()
 
 df_clean["hour"] = df_clean["time"].str.split("-").str[0].astype(int)
+df_clean["date"] = pd.to_datetime(df_clean["date"])
+df_clean["day"] = df_clean["date"].dt.dayofweek
+df_clean["month"] = df_clean["date"].dt.month
 
 app = FastAPI()
 
@@ -92,6 +95,28 @@ def get_hourly(street_name:str):
 
     return{"hourly": hourly.to_dict("records")}
 
+@app.get("/sensors/{street_name}/daily")
+def get_daily(street_name:str):
+    street_data = df_clean[df_clean["road_name"] == street_name]
+    if street_data.empty:
+        return {"error": "Street not found"}
+    
+    daily = street_data.groupby("day")["n"].mean().round().astype(int)
+    daily=daily.reset_index()
+    daily.columns = ["day", "avg_cyclists"]
+    return {"daily": daily.to_dict("records")}
+
+@app.get("/sensors/{street_name}/monthly")
+def get_monthly(street_name: str):
+    street_data =df_clean[df_clean["road_name"] == street_name]
+    if street_data.empty:
+        return {"error": "Street not found"}
+    
+
+    monthly = street_data.groupby("month")["n"].mean().round().astype(int)
+    monthly = monthly.reset_index()
+    monthly.columns = ["month", "avg_cyclists"]
+    return {"monthly": monthly.to_dict("records")}
 
 @app.get("/health")
 def health():
