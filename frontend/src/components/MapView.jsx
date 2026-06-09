@@ -11,7 +11,7 @@ const sensors = [
   { name: "Fredensbro",        lat: 55.6895, lng: 12.5561, cluster: "Heavy Commuter",   color: "#185FA5", avg: 226 },
   { name: "Kalvebod Brygge",   lat: 55.6677, lng: 12.5650, cluster: "Heavy Commuter",   color: "#185FA5", avg: 90  },
   { name: "Vigerslev Allé",    lat: 55.6629, lng: 12.5198, cluster: "Heavy Commuter",   color: "#185FA5", avg: 120 },
-  { name: "Dr. Louises Bro",   lat: 55.6872, lng: 12.5701, cluster: "Afternoon Peak",   color: "#0F6E56", avg: 476 },
+  { name: "Dr. Louises Bro ( ml. Nørrebrogade og Frederiksborggade)",   lat: 55.6872, lng: 12.5701, cluster: "Afternoon Peak",   color: "#0F6E56", avg: 476 },
   { name: "Englandsvej",       lat: 55.6478, lng: 12.5945, cluster: "Moderate",         color: "#EF9F27", avg: 59  },
   { name: "Ellebjergvej",      lat: 55.6558, lng: 12.5148, cluster: "Moderate",         color: "#EF9F27", avg: 75  },
   { name: "Frederikssundsvej", lat: 55.7057, lng: 12.5042, cluster: "Moderate",         color: "#EF9F27", avg: 418 },
@@ -20,22 +20,6 @@ const sensors = [
   { name: "Roskildevej",       lat: 55.6687, lng: 12.4936, cluster: "Low Volume",       color: "#B4B2A9", avg: 135 },
 ]
 
-const geojson = {
-  type: 'FeatureCollection',
-  features: sensors.map(sensor => ({
-    type: 'Feature',
-    geometry: {
-      type: 'Point',
-      coordinates: [sensor.lng, sensor.lat]
-    },
-    properties: {
-      name: sensor.name,
-      cluster: sensor.cluster,
-      avg: sensor.avg,
-      color: sensor.color
-    }
-  }))
-}
 
 const circleLayer = {
   id: 'sensors',
@@ -49,8 +33,29 @@ const circleLayer = {
   }
 }
 
-function MapView() {
-  const [selectedSensor, setSelectedSensor] = useState(null)
+function MapView({setActiveNav, setSelectedStreet, selectedCluster}) {
+  const [hoveredSensor, setHoveredSensor] = useState(null)
+  
+  const filteredSensors = selectedCluster ==="All"
+  ? sensors
+  :sensors.filter(s => s.cluster === selectedCluster)
+  
+  const geojson = {
+      type: 'FeatureCollection',
+      features: filteredSensors.map(sensor => ({
+        type: 'Feature',
+        geometry: {
+          type: 'Point',
+          coordinates: [sensor.lng, sensor.lat]
+        },
+        properties: {
+          name: sensor.name,
+          cluster: sensor.cluster,
+          avg: sensor.avg,
+          color: sensor.color
+        }
+      }))
+    }
 
   return (
     <Map
@@ -65,30 +70,38 @@ function MapView() {
       onClick={e => {
         const feature = e.features?.[0]
         if (feature) {
-          setSelectedSensor({
+          setSelectedStreet(feature.properties.name)
+          setActiveNav("Analysis")
+        } 
+      }}
+      onMouseEnter={e => {
+        const feature = e.features?.[0]
+        if (feature){
+          setHoveredSensor({
             ...feature.properties,
             longitude: feature.geometry.coordinates[0],
-            latitude: feature.geometry.coordinates[1]
+            latitude: feature.geometry.coordinates[1],
           })
-        } else {
-          setSelectedSensor(null)
         }
       }}
+      onMouseLeave={() => setHoveredSensor(null)}
     >
       <Source id="sensors" type="geojson" data={geojson}>
         <Layer {...circleLayer} />
       </Source>
 
-      {selectedSensor && (
+      {hoveredSensor && (
         <Popup
-          longitude={selectedSensor.longitude}
-          latitude={selectedSensor.latitude}
+          longitude={hoveredSensor.longitude}
+          latitude={hoveredSensor.latitude}
           anchor="bottom"
-          onClose={() => setSelectedSensor(null)}
+          closeButton={false}
+          closeOnClick={false}
         >
-          <b>{selectedSensor.name}</b><br />
-          Cluster: {selectedSensor.cluster}<br />
-          Avg Cyclists/hr: {selectedSensor.avg}
+          <div className="popup-name">{hoveredSensor.name}</div>
+          <div className="popup-row">Cluster: {hoveredSensor.cluster}</div>
+          <div className="popup-row">Avg cyclists/hr: <strong>{hoveredSensor.avg}</strong></div>
+          <div className="popup-hint">Click to view full analysis →</div>
         </Popup>
       )}
     </Map>

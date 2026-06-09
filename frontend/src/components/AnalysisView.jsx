@@ -32,8 +32,7 @@ const streets = [
 const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
-function AnalysisView() {
-  const [selectedStreet, setSelectedStreet] = useState("Torvegade")
+function AnalysisView({selectedStreet,setSelectedStreet}) {
   const [streetData, setStreetData] = useState(null)
   const [hourlyData, setHourlyData] = useState([])
   const [dailyData, setDailyData] =useState([])
@@ -56,7 +55,10 @@ function AnalysisView() {
     })
   }, [selectedStreet])
 
-  if (loading) return <p>Loading...</p>
+  if (loading || !streetData || !hourlyData || !dailyData || !monthlyData) {
+  return <p>Loading...</p>
+}
+  
 
   const chartData = {
     labels: hourlyData.map(d => `${d.hour}:00`),
