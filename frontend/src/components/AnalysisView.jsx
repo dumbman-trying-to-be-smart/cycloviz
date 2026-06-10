@@ -37,6 +37,7 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
   const [hourlyData, setHourlyData] = useState([])
   const [dailyData, setDailyData] =useState([])
   const [monthlyData, setMonthlyData] = useState([])
+  const [weatherData, setWeatherData] =useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -45,12 +46,14 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
       axios.get(`http://localhost:8000/sensors/${encodeURIComponent(selectedStreet)}`),
       axios.get(`http://localhost:8000/sensors/${encodeURIComponent(selectedStreet)}/hourly`),
       axios.get(`http://localhost:8000/sensors/${encodeURIComponent(selectedStreet)}/daily`),
-      axios.get(`http://localhost:8000/sensors/${encodeURIComponent(selectedStreet)}/monthly`)
-    ]).then(([streetRes, hourlyRes, dailyRes, monthlyRes]) => {
+      axios.get(`http://localhost:8000/sensors/${encodeURIComponent(selectedStreet)}/monthly`),
+      axios.get(`http://localhost:8000/weather/impact`)
+    ]).then(([streetRes, hourlyRes, dailyRes, monthlyRes,weatherRes]) => {
       setStreetData(streetRes.data)
       setHourlyData(hourlyRes.data.hourly)
       setDailyData(dailyRes.data.daily)
       setMonthlyData(monthlyRes.data.monthly)
+      setWeatherData(weatherRes.data)
       setLoading(false)
     })
   }, [selectedStreet])
@@ -97,6 +100,49 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
       borderRadius: 4,
     }]
   }
+
+  const rainChartData ={
+    labels: ["Dry", "Light Rain", "Heavy Rain"],
+    datasets: [{
+      label:"Avg cyclists",
+      data: [
+        weatherData.rain_impact["Dry"],
+        weatherData.rain_impact["Light rain"],
+        weatherData.rain_impact["Heavy rain"]
+      ],
+      backgroundColor: ["#B5D4F4", "#7BA7D4", "#185FA5"],
+      borderRadius:4,
+    }]
+  }
+  
+  const tempChartData ={
+    labels: ["Cold", "Mild", "Warm"],
+    datasets:[{
+      label: "Avg cyclists",
+      data: [
+        weatherData.temp_impact["Cold"],
+        weatherData.temp_impact["Mild"],
+        weatherData.temp_impact["Warm"]
+      ],
+      backgroundColor: ["#B5D4F4", "#7BA7D4", "#185FA5"],
+      broderRadius: 4,
+    }]
+  }
+
+  const windChartData = {
+    labels: ["Calm", "Moderate", "Windy"],
+    datasets: [{
+      label: "Avg cyclists",
+      data: [
+        weatherData.wind_impact["Calm"],
+        weatherData.wind_impact["Moderate"],
+        weatherData.wind_impact["Windy"]
+      ],
+      backgroundColor: ["#B5D4F4", "#7BA7D4", "#185FA5"],
+      borderRadius: 4,
+    }]
+  }
+  
 
   const chartOptions = {
     responsive: true,
@@ -172,6 +218,20 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
       <div className="chart-container">
         <p className="chart-title">Average cyclists by month</p>
         <Bar data={monthlyChartData} options={chartOptions} />
+      </div>
+      <div className="chart-container">
+        <p className="chart-title">Rain impact on cycling</p>
+        <Bar data={rainChartData} options={chartOptions} />
+      </div>
+
+      <div className="chart-container">
+        <p className="chart-title">Temperature impact on cycling</p>
+        <Bar data={tempChartData} options={chartOptions} />
+      </div>
+
+      <div className="chart-container">
+        <p className="chart-title">Wind impact on cycling</p>
+        <Bar data={windChartData} options={chartOptions} />
       </div>
     </div>
   )
