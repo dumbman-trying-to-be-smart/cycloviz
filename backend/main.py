@@ -2,7 +2,7 @@ from fastapi import FastAPI
 import pandas as pd
 from fastapi.middleware.cors import CORSMiddleware
 
-
+# cycling dataset
 df = pd.read_csv("data/total_rides.csv")
 cluster= pd.read_csv("data/clusters.csv")
 df_clean = df.dropna()
@@ -11,6 +11,22 @@ df_clean["hour"] = df_clean["time"].str.split("-").str[0].astype(int)
 df_clean["date"] = pd.to_datetime(df_clean["date"])
 df_clean["day"] = df_clean["date"].dt.dayofweek
 df_clean["month"] = df_clean["date"].dt.month
+
+# cycling with weather dataset
+df_weather = pd.read_csv("data/cycling_with_weather.csv")
+df_weather["date"]= pd.to_datetime(df_weather["date"])
+
+df_weather["rain_category"] = df_weather["precipitation_sum"].apply(
+    lambda x: "Heavy rain" if x > 5
+    else "Light rain" if x > 1
+    else "Dry"
+)
+
+df_weather["temp_category"] = df_weather["temperature_2m_mean"].apply(
+    lambda x: "Cold" if x < 5
+    else "Mild" if x < 15
+    else "Warm"
+)
 
 app = FastAPI()
 
@@ -117,6 +133,21 @@ def get_monthly(street_name: str):
     monthly = monthly.reset_index()
     monthly.columns = ["month", "avg_cyclists"]
     return {"monthly": monthly.to_dict("records")}
+
+@app.get("/weather/impact")
+def get_weather_impact():
+        rain = df_weather.groupby("rain_category")["n"].mean().round().astype(int)
+        temp = df_weather.groupby("temp_category")["n"].mean().round().astype(int)
+        wind_cats = df_weather["windspeed_10m_max"].apply(
+            lambda x: "Windy" if x > 30 else "Moderate" if x > 15 else "Calm"
+        )
+        wind = df_weather.groupby(wind_cats)["n"].mean().round().astype(int)
+
+        return{
+            "rain_impact": rain.to_dict(),
+            "temp_impact": temp.to_dict(),
+            "wind_impact": wind.to_dict()
+        }
 
 @app.get("/health")
 def health():

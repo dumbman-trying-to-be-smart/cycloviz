@@ -43,11 +43,11 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
   useEffect(() => {
     setLoading(true)
     Promise.all([
-      axios.get(`http://localhost:8000/sensors/${encodeURIComponent(selectedStreet)}`),
-      axios.get(`http://localhost:8000/sensors/${encodeURIComponent(selectedStreet)}/hourly`),
-      axios.get(`http://localhost:8000/sensors/${encodeURIComponent(selectedStreet)}/daily`),
-      axios.get(`http://localhost:8000/sensors/${encodeURIComponent(selectedStreet)}/monthly`),
-      axios.get(`http://localhost:8000/weather/impact`)
+      axios.get(`https://cycloviz-backend.onrender.com/sensors/${encodeURIComponent(selectedStreet)}`),
+      axios.get(`https://cycloviz-backend.onrender.com/sensors/${encodeURIComponent(selectedStreet)}/hourly`),
+      axios.get(`https://cycloviz-backend.onrender.com/sensors/${encodeURIComponent(selectedStreet)}/daily`),
+      axios.get(`https://cycloviz-backend.onrender.com/sensors/${encodeURIComponent(selectedStreet)}/monthly`),
+      axios.get(`https://cycloviz-backend.onrender.com/weather/impact`)
     ]).then(([streetRes, hourlyRes, dailyRes, monthlyRes,weatherRes]) => {
       setStreetData(streetRes.data)
       setHourlyData(hourlyRes.data.hourly)

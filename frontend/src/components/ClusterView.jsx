@@ -25,7 +25,7 @@ function ClustersView(){
 
     useEffect(() => {
         setLoading(true)
-        axios.get(`http://localhost:8000/clusters`)
+        axios.get(`https://cycloviz-backend.onrender.com/clusters`)
         .then((res) => {
             setClusters(res.data.cluster)
             setLoading(false)

@@ -42,10 +42,10 @@ function CompareView(){
         setLoading(true)
 
         Promise.all([
-            axios.get(`http://localhost:8000/sensors/${encodeURIComponent(selectedStreetA)}`),
-            axios.get(`http://localhost:8000/sensors/${encodeURIComponent(selectedStreetB)}`),
-            axios.get(`http://localhost:8000/sensors/${encodeURIComponent(selectedStreetA)}/hourly`),
-            axios.get(`http://localhost:8000/sensors/${encodeURIComponent(selectedStreetB)}/hourly`)
+            axios.get(`https://cycloviz-backend.onrender.com/sensors/${encodeURIComponent(selectedStreetA)}`),
+            axios.get(`https://cycloviz-backend.onrender.com/sensors/${encodeURIComponent(selectedStreetB)}`),
+            axios.get(`https://cycloviz-backend.onrender.com/sensors/${encodeURIComponent(selectedStreetA)}/hourly`),
+            axios.get(`https://cycloviz-backend.onrender.com/sensors/${encodeURIComponent(selectedStreetB)}/hourly`)
         ]).then(([streetResA, streetResB, hourlyResA, hourlyResB]) => {
       setStreetDataA(streetResA.data)
       setStreetDataB(streetResB.data)
