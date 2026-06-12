@@ -208,6 +208,7 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
       </div>
 
       <div className="chart-container">
+        <p className="chart-title">Average cyclists by hour of day/</p>
         <Bar data={chartData} options={chartOptions} />
       </div>
       <div className="chart-container">
@@ -219,20 +220,20 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
         <p className="chart-title">Average cyclists by month</p>
         <Bar data={monthlyChartData} options={chartOptions} />
       </div>
-      <div className="chart-container">
-        <p className="chart-title">Rain impact on cycling</p>
-        <Bar data={rainChartData} options={chartOptions} />
-      </div>
-
-      <div className="chart-container">
-        <p className="chart-title">Temperature impact on cycling</p>
-        <Bar data={tempChartData} options={chartOptions} />
-      </div>
-
-      <div className="chart-container">
-        <p className="chart-title">Wind impact on cycling</p>
-        <Bar data={windChartData} options={chartOptions} />
-      </div>
+      <div className="weather-charts">
+        <div className="chart-container-small">
+          <p className="chart-title">Rain impact</p>
+          <Bar data={rainChartData} options={chartOptions} />
+        </div>
+        <div className="chart-container-small">
+          <p className="chart-title">Temperature impact</p>
+          <Bar data={tempChartData} options={chartOptions} />
+        </div>
+        <div className="chart-container-small">
+          <p className="chart-title">Wind impact</p>
+          <Bar data={windChartData} options={chartOptions} />
+        </div>
+      </div>  
     </div>
   )
 }
