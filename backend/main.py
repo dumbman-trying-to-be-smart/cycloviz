@@ -32,9 +32,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "https://cycloviz-frontend.onrender.com"          ],
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
