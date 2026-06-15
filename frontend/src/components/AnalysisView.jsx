@@ -11,6 +11,18 @@ import {
   Legend
 } from "chart.js"
 
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip as RechartsTooltip,
+  CartesianGrid,
+  ResponsiveContainer
+} from "recharts";
+
+
+
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 const streets = [
@@ -32,12 +44,15 @@ const streets = [
 const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
+
 function AnalysisView({selectedStreet,setSelectedStreet}) {
   const [streetData, setStreetData] = useState(null)
   const [hourlyData, setHourlyData] = useState([])
   const [dailyData, setDailyData] =useState([])
   const [monthlyData, setMonthlyData] = useState([])
+  const [yearlyData, setYearlyData] = useState([])
   const [weatherData, setWeatherData] =useState(null)
+  const [activeTab, setActiveTab] = useState("traffic")
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -47,18 +62,20 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
       axios.get(`https://cycloviz-backend.onrender.com/sensors/${encodeURIComponent(selectedStreet)}/hourly`),
       axios.get(`https://cycloviz-backend.onrender.com/sensors/${encodeURIComponent(selectedStreet)}/daily`),
       axios.get(`https://cycloviz-backend.onrender.com/sensors/${encodeURIComponent(selectedStreet)}/monthly`),
+      axios.get(`https://cycloviz-backend.onrender.com/sensors/${encodeURIComponent(selectedStreet)}/yearly`),
       axios.get(`https://cycloviz-backend.onrender.com/weather/impact`)
-    ]).then(([streetRes, hourlyRes, dailyRes, monthlyRes,weatherRes]) => {
+    ]).then(([streetRes, hourlyRes, dailyRes, monthlyRes,yearlyRes,weatherRes]) => {
       setStreetData(streetRes.data)
       setHourlyData(hourlyRes.data.hourly)
       setDailyData(dailyRes.data.daily)
       setMonthlyData(monthlyRes.data.monthly)
+      setYearlyData(yearlyRes.data.yearly)
       setWeatherData(weatherRes.data)
       setLoading(false)
     })
   }, [selectedStreet])
 
-  if (loading || !streetData || !hourlyData || !dailyData || !monthlyData) {
+  if (loading || !streetData || !hourlyData || !dailyData || !monthlyData || yearlyData) {
   return <p>Loading...</p>
 }
   
@@ -96,6 +113,18 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
       data: monthlyData.map(m => m.avg_cyclists),
       backgroundColor: monthlyData.map(d =>
         d.month >= 6 && d.month <= 8 ? "#185FA5" : "#B5D4F4"
+      ),
+      borderRadius: 4,
+    }]
+  }
+
+  const yearlyChartData ={
+    labels: yearlyData.map(d => d["year"]),
+    datasets:[{
+      label: "Avg cyclists",
+      data: yearlyData.map(m => m.avg_cyclists),
+      backgroundColor: yearlyData.map(d => 
+        d.year === 2006 && d.year === 2014? "#185FA5" : "#B5D4F4"
       ),
       borderRadius: 4,
     }]
@@ -206,34 +235,89 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
           <h3>{streetData.cluster}</h3>
         </div>
       </div>
+      <div className="tab-bar">
+        <button
+        className={activeTab == "traffic" ? "tab-btn active": "tab-btn"}
+        onClick={() => setActiveTab("traffic")}
+        >
+          Traffic Patterns
+        </button>
+        <button
+        className={activeTab == "weather" ? "tab-btn active": "tab-btn"}
+        onClick={() => setActiveTab("weather")}
+        >
+          Weather Impact
+        </button>
+        <button
+        className={activeTab == "trends" ? "tab-btn active" : "tab-btn"}
+        onClick={() => setActiveTab("trends")}
+        >
+          Trends
+        </button>
+      </div>
+      {activeTab === "traffic" &&(
+        <>
+        <div className="chart-container">
+          <p className="chart-title">Average cyclists by hour of day/</p>
+          <Bar data={chartData} options={chartOptions} />
+        </div>
+        <div className="chart-container">
+          <p className="chart-title">Average cyclists by day of week</p>
+          <Bar data={dailyChartData} options={chartOptions} />
+        </div>
+        <div className="chart-container">
+          <p className="chart-title">Average cyclists by month</p>
+          <Bar data={monthlyChartData} options={chartOptions} />
+        </div>
+        </>
+      )}
 
-      <div className="chart-container">
-        <p className="chart-title">Average cyclists by hour of day/</p>
-        <Bar data={chartData} options={chartOptions} />
-      </div>
-      <div className="chart-container">
-        <p className="chart-title">Average cyclists by day of week</p>
-        <Bar data={dailyChartData} options={chartOptions} />
-      </div>
+      {activeTab === "weather" && (
+        <>
+          <div className="weather-charts">
+            <div className="chart-container-small">
+              <p className="chart-title">Rain impact</p>
+              <Bar data={rainChartData} options={chartOptions} />
+            </div>
+            <div className="chart-container-small">
+              <p className="chart-title">Temperature impact</p>
+              <Bar data={tempChartData} options={chartOptions} />
+            </div>
+            <div className="chart-container-small">
+              <p className="chart-title">Wind impact</p>
+              <Bar data={windChartData} options={chartOptions} />
+            </div>
+          </div> 
+        </>
+      )}
+      {activeTab === "trends" && (
+        <>
+        <div className ="chart-container">
+          <p className="chart-title">Yearly trend</p>
+          <Bar data={yearlyChartData} options={chartOptions}/>
+        </div>
+        <div className="chart-container">
+          <p className="chart-title">Yearly cyclist trend</p>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={yearlyData}>
+              <CartesianGrid strokeDasharray="3 3"/>
+              <XAxis dataKey = "year"/>
+              <YAxis tickFormatter={(v) => v.toLocaleString()}/>
+              <RechartsTooltip formatter={(v) => [`${v.toLocaleString()} cyclists`, "Avg"]}/>
+              <Line
+                type="monotone"
+                dataKey="avg_cyclists"
+                stroke="#185FA5"
+                strokeWidth={2}
+                dot={{ r: 4, fill: "#185FA5" }}
+                activeDot={{ r: 6 }}
+              />
 
-      <div className="chart-container">
-        <p className="chart-title">Average cyclists by month</p>
-        <Bar data={monthlyChartData} options={chartOptions} />
-      </div>
-      <div className="weather-charts">
-        <div className="chart-container-small">
-          <p className="chart-title">Rain impact</p>
-          <Bar data={rainChartData} options={chartOptions} />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
-        <div className="chart-container-small">
-          <p className="chart-title">Temperature impact</p>
-          <Bar data={tempChartData} options={chartOptions} />
-        </div>
-        <div className="chart-container-small">
-          <p className="chart-title">Wind impact</p>
-          <Bar data={windChartData} options={chartOptions} />
-        </div>
-      </div>  
+        </>
+      )} 
     </div>
   )
 }

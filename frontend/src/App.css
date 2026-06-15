@@ -363,3 +363,32 @@
   font-size: 13px;
   font-weight: 500;
 }
+
+.tab-bar{
+  display: flex;
+  gap: 4px;
+  border-bottom: 0.5px solid #e0e0e0;
+  padding-bottom: 0;
+  margin-bottom: 4px;
+}
+
+.tab-btn {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  color: #888;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.tab-btn:hover{
+  color: #333;
+}
+
+.tab-btn:active{
+  color: #185FA5;
+  border-bottom-color: #185FA5;
+  font-weight: 500;
+}

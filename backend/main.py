@@ -11,6 +11,7 @@ df_clean["hour"] = df_clean["time"].str.split("-").str[0].astype(int)
 df_clean["date"] = pd.to_datetime(df_clean["date"])
 df_clean["day"] = df_clean["date"].dt.dayofweek
 df_clean["month"] = df_clean["date"].dt.month
+df_clean["year"] = df_clean["date"].dt.year
 
 # cycling with weather dataset
 df_weather = pd.read_csv("data/cycling_with_weather.csv")
@@ -148,6 +149,17 @@ def get_weather_impact():
             "temp_impact": temp.to_dict(),
             "wind_impact": wind.to_dict()
         }
+
+@app.get("/sensors/{street_name}/yearly")
+def get_yearly(street_name: str):
+    street_data = df_clean[df_clean["road_name"]== street_name]
+    if street_data.empty:
+        return {"error": "Street not found"}
+    daily_total = street_data.groupby(["year", "date"])["n"].sum().reset_index()
+    yearly = daily_total.groupby("year")["n"].mean().round().astype(int).reset_index()
+    yearly.columns =["year", "avg_cyclists"]
+    yearly = yearly[yearly["avg_cyclists"] > 500]
+    return {"yearly": yearly.to_dict("records")}
 
 @app.get("/health")
 def health():
