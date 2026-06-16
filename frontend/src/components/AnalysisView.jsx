@@ -75,7 +75,7 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
     })
   }, [selectedStreet])
 
-  if (loading || !streetData || !hourlyData || !dailyData || !monthlyData || yearlyData) {
+  if (loading || !streetData || !hourlyData || !dailyData || !monthlyData || !yearlyData) {
   return <p>Loading...</p>
 }
   
@@ -312,7 +312,6 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
                 dot={{ r: 4, fill: "#185FA5" }}
                 activeDot={{ r: 6 }}
               />
-
             </LineChart>
           </ResponsiveContainer>
         </div>
