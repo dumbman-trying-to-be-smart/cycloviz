@@ -55,38 +55,109 @@ function CompareView(){
     })
   }, [selectedStreetA, selectedStreetB])
 
-  if (loading) return <p>Loading...</p>
-     const chartData ={
+  if (loading)
+    return (
+        <div className="spinner-container">
+        <svg width="150" height="75" viewBox="0 0 150 75" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g className="w1">
+            <circle cx="34" cy="56" r="20" stroke="#185FA5" strokeWidth="2"/>
+            <circle cx="34" cy="56" r="14" stroke="#185FA5" strokeWidth="1" strokeDasharray="4 4"/>
+            <circle cx="34" cy="56" r="3" fill="#185FA5"/>
+            </g>
+            <g className="w2">
+            <circle cx="106" cy="56" r="20" stroke="#185FA5" strokeWidth="2"/>
+            <circle cx="106" cy="56" r="14" stroke="#185FA5" strokeWidth="1" strokeDasharray="4 4"/>
+            <circle cx="106" cy="56" r="3" fill="#185FA5"/>
+            </g>
+            <line x1="34" y1="56" x2="68" y2="56" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"/>
+            <line x1="68" y1="56" x2="62" y2="30" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"/>
+            <line x1="68" y1="56" x2="98" y2="32" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"/>
+            <line x1="62" y1="30" x2="98" y2="32" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"/>
+            <line x1="98" y1="32" x2="106" y2="56" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"/>
+            <line x1="62" y1="30" x2="34" y2="56" stroke="#185FA5" strokeWidth="1.5" strokeLinecap="round"/>
+            <circle cx="68" cy="56" r="3" fill="#185FA5"/>
+            <line x1="62" y1="30" x2="60" y2="20" stroke="#185FA5" strokeWidth="1.5" strokeLinecap="round"/>
+            <path d="M54 19 Q60 16 66 19" stroke="#185FA5" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+            <line x1="98" y1="32" x2="100" y2="22" stroke="#185FA5" strokeWidth="1.5" strokeLinecap="round"/>
+            <path d="M96 20 Q100 18 106 22" stroke="#185FA5" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+        </svg>
+        <div className="road">
+            <div className="rd"></div>
+            <div className="rd"></div>
+            <div className="rd"></div>
+        </div>
+        <div className="loading-text">Loading data</div>
+        </div>
+    )
+    const maxA = Math.max(...hourlyDataA.map(d => d.avg_cyclists))
+    const maxB = Math.max(...hourlyDataB.map(d => d.avg_cyclists))
+
+    const chartData = {
         labels: hourlyDataA.map(d => `${d.hour}:00`),
         datasets: [
             {
-                label:streetDataA.street,
-                data: hourlyDataA.map(d => d.avg_cyclists),
-                backgroundColor: "#185FA5",
-                borderRadius: 4,
+            label: streetDataA.street,
+            data: hourlyDataA.map(d => d.avg_cyclists),
+            backgroundColor: "#185FA5",
+            borderRadius: 4,
+            stack: "same",
             },
             {
-                label: streetDataB.street,
-                data: hourlyDataB.map(d => d.avg_cyclists),
-                backgroundColor: "#EF9F27",
-                borderRadius: 4,
-                }
+            label: streetDataB.street,
+            data: hourlyDataB.map(d => -(d.avg_cyclists / maxB) * maxA),
+            backgroundColor: "rgba(239, 159, 39, 0.5)",
+            borderRadius: 4,
+            stack: "same",
+            }
         ]
-    }
+        }
 
-        const chartOptions = {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: true }
-                },
-                scales: {
-                    x: { grid: { display: false } },
-                    y: { beginAtZero: true }
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'x',
+        datasets: {
+            bar: {
+            barPercentage: 1,
+            categoryPercentage: 0.8,
+            }
+        },
+        plugins: {
+            legend: { display: true },
+            tooltip: {
+            callbacks: {
+                label: (context) => {
+                if (context.datasetIndex === 0) {
+                    return `${context.dataset.label}: ${context.parsed.y.toLocaleString()} cyclists`
+                } else {
+                    const realValue = Math.round(Math.abs(context.parsed.y) / maxA * maxB)
+                    return `${context.dataset.label}: ${realValue.toLocaleString()} cyclists`
                 }
                 }
-
-
+            }
+            }
+        },
+        scales: {
+            x: {
+            grid: { display: false },
+            stacked: true,
+            ticks: { font: { size: 11 }, color: "#999" }
+            },
+            y: {
+            stacked: false,
+            ticks: {
+                callback: (value) => {
+                if (value >= 0) return value.toLocaleString()
+                return Math.round(Math.abs(value) / maxA * maxB).toLocaleString()
+                }
+            },
+            grid: {
+                color: (context) => context.tick.value === 0 ? "#999" : "#f0f0f0",
+                lineWidth: (context) => context.tick.value === 0 ? 2 : 1,
+            }
+            }
+        }
+        }
     return (
         <div className="compare-container">
             

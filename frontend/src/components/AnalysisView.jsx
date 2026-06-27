@@ -1,29 +1,24 @@
 import { useState, useEffect } from "react"
 import axios from "axios"
-import { Bar } from "react-chartjs-2"
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
   BarElement,
+  LineElement,   // add this
+  PointElement,  // add this
   Title,
   Tooltip,
   Legend
 } from "chart.js"
+import { Bar, Line } from "react-chartjs-2" 
 
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip as RechartsTooltip,
-  CartesianGrid,
-  ResponsiveContainer
-} from "recharts";
-
-
-
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
+ChartJS.register(
+  CategoryScale, LinearScale,
+  BarElement,
+  LineElement, PointElement,  // add these
+  Title, Tooltip, Legend
+)
 
 const streets = [
   { label: "Torvegade", value: "Torvegade" },
@@ -76,8 +71,40 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
   }, [selectedStreet])
 
   if (loading || !streetData || !hourlyData || !dailyData || !monthlyData || !yearlyData) {
-  return <p>Loading...</p>
-}
+    return (
+      <div className="spinner-container">
+        <svg width="150" height="75" viewBox="0 0 150 75" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g className="w1">
+            <circle cx="34" cy="56" r="20" stroke="#185FA5" strokeWidth="2"/>
+            <circle cx="34" cy="56" r="14" stroke="#185FA5" strokeWidth="1" strokeDasharray="4 4"/>
+            <circle cx="34" cy="56" r="3" fill="#185FA5"/>
+          </g>
+          <g className="w2">
+            <circle cx="106" cy="56" r="20" stroke="#185FA5" strokeWidth="2"/>
+            <circle cx="106" cy="56" r="14" stroke="#185FA5" strokeWidth="1" strokeDasharray="4 4"/>
+            <circle cx="106" cy="56" r="3" fill="#185FA5"/>
+          </g>
+          <line x1="34" y1="56" x2="68" y2="56" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"/>
+          <line x1="68" y1="56" x2="62" y2="30" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"/>
+          <line x1="68" y1="56" x2="98" y2="32" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"/>
+          <line x1="62" y1="30" x2="98" y2="32" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"/>
+          <line x1="98" y1="32" x2="106" y2="56" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"/>
+          <line x1="62" y1="30" x2="34" y2="56" stroke="#185FA5" strokeWidth="1.5" strokeLinecap="round"/>
+          <circle cx="68" cy="56" r="3" fill="#185FA5"/>
+          <line x1="62" y1="30" x2="60" y2="20" stroke="#185FA5" strokeWidth="1.5" strokeLinecap="round"/>
+          <path d="M54 19 Q60 16 66 19" stroke="#185FA5" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+          <line x1="98" y1="32" x2="100" y2="22" stroke="#185FA5" strokeWidth="1.5" strokeLinecap="round"/>
+          <path d="M96 20 Q100 18 106 22" stroke="#185FA5" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+        </svg>
+        <div className="road">
+          <div className="rd"></div>
+          <div className="rd"></div>
+          <div className="rd"></div>
+        </div>
+        <div className="loading-text">Loading data</div>
+      </div>
+    )
+  }
   
 
   const chartData = {
@@ -139,7 +166,7 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
         weatherData.rain_impact["Light rain"],
         weatherData.rain_impact["Heavy rain"]
       ],
-      backgroundColor: ["#B5D4F4", "#7BA7D4", "#185FA5"],
+      backgroundColor: ["rgba(24, 95, 165, 0.25)", "rgba(24, 95, 165, 0.5)", "rgba(24, 95, 165, 0.85)"],
       borderRadius:4,
     }]
   }
@@ -153,8 +180,8 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
         weatherData.temp_impact["Mild"],
         weatherData.temp_impact["Warm"]
       ],
-      backgroundColor: ["#B5D4F4", "#7BA7D4", "#185FA5"],
-      broderRadius: 4,
+       backgroundColor: ["rgba(230, 126, 34, 0.25)", "rgba(230, 126, 34, 0.5)", "rgba(230, 126, 34, 0.85)"],
+      borderRadius: 4,
     }]
   }
 
@@ -167,7 +194,7 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
         weatherData.wind_impact["Moderate"],
         weatherData.wind_impact["Windy"]
       ],
-      backgroundColor: ["#B5D4F4", "#7BA7D4", "#185FA5"],
+      backgroundColor: ["rgba(39, 174, 96, 0.25)", "rgba(39, 174, 96, 0.5)", "rgba(39, 174, 96, 0.85)"],
       borderRadius: 4,
     }]
   }
@@ -258,7 +285,7 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
       {activeTab === "traffic" &&(
         <>
         <div className="chart-container">
-          <p className="chart-title">Average cyclists by hour of day/</p>
+          <p className="chart-title">Average cyclists by hour of day</p>
           <Bar data={chartData} options={chartOptions} />
         </div>
         <div className="chart-container">
@@ -292,28 +319,104 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
       )}
       {activeTab === "trends" && (
         <>
-        <div className ="chart-container">
-          <p className="chart-title">Yearly trend</p>
-          <Bar data={yearlyChartData} options={chartOptions}/>
-        </div>
         <div className="chart-container">
           <p className="chart-title">Yearly cyclist trend</p>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={yearlyData}>
-              <CartesianGrid strokeDasharray="3 3"/>
-              <XAxis dataKey = "year"/>
-              <YAxis tickFormatter={(v) => v.toLocaleString()}/>
-              <RechartsTooltip formatter={(v) => [`${v.toLocaleString()} cyclists`, "Avg"]}/>
-              <Line
-                type="monotone"
-                dataKey="avg_cyclists"
-                stroke="#185FA5"
-                strokeWidth={2}
-                dot={{ r: 4, fill: "#185FA5" }}
-                activeDot={{ r: 6 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <Line
+            data={{
+              labels: yearlyData.map(d => d.year),
+              datasets: [{
+                label: "Avg cyclists",
+                data: yearlyData.map(d => d.avg_cyclists),
+                borderColor: "#185FA5",
+                borderWidth: 2.5,
+                pointRadius: 5,
+                pointBackgroundColor: "#fff",
+                pointBorderColor: "#185FA5",
+                pointBorderWidth: 2.5,
+                pointHoverRadius: 7,
+                pointHoverBackgroundColor: "#185FA5",
+                pointHoverBorderColor: "#fff",
+                pointHoverBorderWidth: 2,
+                tension: 0.4,
+                
+              }]
+            }}
+            plugins={[{
+              id: "gradientFill",
+              beforeDraw(chart) {
+              const { ctx, chartArea: { bottom }, scales: { x, y } } = chart;
+              const meta = chart.getDatasetMeta(0);
+              if (!meta.data.length) return;
+
+              ctx.save();
+              const gradient = ctx.createLinearGradient(0, chart.chartArea.top, 0, bottom);
+              gradient.addColorStop(0, "rgba(24,95,165,0.18)");
+              gradient.addColorStop(1, "rgba(24,95,165,0.00)");
+
+              ctx.beginPath();
+              ctx.moveTo(meta.data[0].x, bottom);          // start at bottom-left
+              ctx.lineTo(meta.data[0].x, meta.data[0].y);  // line up to first point
+
+              for (let i = 1; i < meta.data.length; i++) {
+                const prev = meta.data[i - 1];
+                const curr = meta.data[i];
+                const cpx1 = prev.x + (curr.x - prev.x) * 0.4;
+                const cpy1 = prev.y;
+                const cpx2 = curr.x - (curr.x - prev.x) * 0.4;
+                const cpy2 = curr.y;
+                ctx.bezierCurveTo(cpx1, cpy1, cpx2, cpy2, curr.x, curr.y);
+              }
+
+              ctx.lineTo(meta.data[meta.data.length - 1].x, bottom); // down to bottom-right
+              ctx.closePath();
+              ctx.lineTo(meta.data[meta.data.length - 1].x, bottom);
+              ctx.lineTo(meta.data[0].x, bottom);
+              ctx.closePath();
+              ctx.fillStyle = gradient;
+              ctx.fill();
+              ctx.restore();
+            }
+            }]}
+            options={{
+              responsive: true,
+              maintainAspectRatio: false,
+              animation: { duration: 800, easing: "easeInOutQuart" },
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  backgroundColor: "#fff",
+                  titleColor: "#185FA5",
+                  bodyColor: "#444",
+                  borderColor: "#B5D4F4",
+                  borderWidth: 1,
+                  padding: 12,
+                  cornerRadius: 8,
+                  displayColors: false,
+                  callbacks: {
+                    title: (items) => `Year ${items[0].label}`,
+                    label: (context) => `${context.parsed.y.toLocaleString()} cyclists`,
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  grid: { display: false },
+                  border: { display: false },
+                  ticks: { color: "#999", font: { size: 11 } }
+                },
+                y: {
+                  beginAtZero: false,
+                  grid: { color: "#f0f0f0" },
+                  border: { display: false },
+                  ticks: {
+                    color: "#999",
+                    font: { size: 11 },
+                    callback: (v) => v.toLocaleString()
+                  }
+                }
+              }
+            }}
+          />
         </div>
         </>
       )} 
