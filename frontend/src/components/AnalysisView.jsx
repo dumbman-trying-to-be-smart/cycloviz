@@ -49,6 +49,7 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
   const [weatherData, setWeatherData] =useState(null)
   const [activeTab, setActiveTab] = useState("traffic")
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
   useEffect(() => {
     setLoading(true)
@@ -68,7 +69,20 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
       setWeatherData(weatherRes.data)
       setLoading(false)
     })
+    .catch(() => {
+      setError(true)
+      setLoading(false)
+    })
   }, [selectedStreet])
+  
+
+  if (error) return(
+    <div className="spinner-container">
+      <p style={{fontSize: "32px" }}>🚲</p>
+      <p style ={{ color: "#999", fontSize: "14px"}}>Could not load data. Please try again later.</p>
+
+    </div>
+  )
 
   if (loading || !streetData || !hourlyData || !dailyData || !monthlyData || !yearlyData) {
     return (
@@ -154,7 +168,34 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
         d.year === 2006 && d.year === 2014? "#185FA5" : "#B5D4F4"
       ),
       borderRadius: 4,
+    }],
+  }
+
+  const weekdayAvg = Math.round(
+      dailyData.filter(d => d.day >= 0 && d.day <= 4).reduce((sum, d) => sum + d.avg_cyclists,0)/5
+    )
+  
+  const weekendAvg = Math.round(
+    dailyData.filter(d => d.day ===5 || d.day ===6).reduce((sum, d) => sum + d.avg_cyclists, 0)/2
+  )
+
+  const weekdayweekendData = {
+    labels: ["Weekday", "Weekend"],
+    datasets: [{
+      label: "Avg cyclists",
+      data: [weekdayAvg, weekendAvg],
+      backgroundColor: ["#185FA5", "#EF9F27"],
+      borderRadius: 6,
     }]
+  }
+
+  const peakHour = hourlyData.reduce((max, d) => d.avg_cyclists > max.avg_cyclists ? d : max, hourlyData[0])
+
+  const clusterDescriptions = {
+    "Heavy Commuter Routes": "High traffic roads used mainly for commuting",
+    "Afternoon Peak Route": "Roads that get busy in the afternoon",
+    "Moderate Routes": "Medium traffic, less busy than commuter roads",
+    "Low Volume Routes": "Quiet roads with few cyclists"
   }
 
   const rainChartData ={
@@ -257,9 +298,10 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
           <p>Daily total</p>
           <h3>{streetData.avg_daily_total.toLocaleString()}</h3>
         </div>
-        <div className="stat-card">
+        <div className="stat-card tooltip-card">
           <p>Cluster type</p>
           <h3>{streetData.cluster}</h3>
+          <span className="tooltip">{clusterDescriptions[streetData.cluster]}</span>
         </div>
       </div>
       <div className="tab-bar">
@@ -284,6 +326,24 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
       </div>
       {activeTab === "traffic" &&(
         <>
+        <div className="stat-card" style={{ background: "#EAF3F8", border: "0.5px solid #B5D4F4" }}>
+          <p>Peak hour</p>
+          <h3>
+            {(() => {
+              let peakHour = hourlyData[0]
+              for (let i = 0; i < hourlyData.length; i++) {
+                if (hourlyData[i].avg_cyclists > peakHour.avg_cyclists) {
+                  peakHour = hourlyData[i]
+                }
+              }
+              return `${peakHour.hour}:00 — ${peakHour.avg_cyclists.toLocaleString()} cyclists`
+            })()}
+          </h3>
+        </div>
+        <div className="chart-container">
+          <p className="chart-title">Average cyclists by hour of day</p>
+          <Bar data={chartData} options={chartOptions} />
+        </div>
         <div className="chart-container">
           <p className="chart-title">Average cyclists by hour of day</p>
           <Bar data={chartData} options={chartOptions} />
@@ -417,6 +477,10 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
               }
             }}
           />
+        </div>
+        <div className="chart-container">
+          <p className="chart-title">Weekday vs Weekend average</p>
+          <Bar data={weekdayweekendData} options={chartOptions} />
         </div>
         </>
       )} 

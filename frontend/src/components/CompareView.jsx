@@ -37,6 +37,7 @@ function CompareView(){
     const [loading, setLoading] = useState(true)
     const [hourlyDataA, setHourlyDataA] = useState([])
     const [hourlyDataB, setHourlyDataB] = useState([])
+    const [error, setError] = useState(false)
 
     useEffect(() => {
         setLoading(true)
@@ -53,7 +54,20 @@ function CompareView(){
       setHourlyDataB(hourlyResB.data.hourly)
       setLoading(false)
     })
+    .catch(() => {
+        setError(true)
+        setLoading(false)
+    })
   }, [selectedStreetA, selectedStreetB])
+  
+
+  if (error) return (
+  <div className="spinner-container">
+    <p style={{ fontSize: "32px" }}>🚲</p>
+    <p style={{ color: "#999", fontSize: "14px" }}>Could not load data. Please try again later.</p>
+  </div>
+)
+  
 
   if (loading)
     return (
