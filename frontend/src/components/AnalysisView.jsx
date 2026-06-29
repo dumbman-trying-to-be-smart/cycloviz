@@ -341,13 +341,24 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
           </h3>
         </div>
         <div className="chart-container">
-          <p className="chart-title">Average cyclists by hour of day</p>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+            <p className="chart-title" style={{ margin: 0 }}>Average cyclists by hour of day</p>
+            <button
+              style={{ fontSize: "12px", padding: "4px 10px", border: "0.5px solid #d0d0d0", borderRadius: "6px", cursor: "pointer", background: "white", color: "#555", whiteSpace: "nowrap" }}
+              onClick={() => {
+                const canvas = document.querySelector("canvas")
+                const link = document.createElement("a")
+                link.download = "cycloviz-chart.png"
+                link.href = canvas.toDataURL()
+                link.click()
+              }}
+            >
+              Export ↓
+            </button>
+          </div>
           <Bar data={chartData} options={chartOptions} />
         </div>
-        <div className="chart-container">
-          <p className="chart-title">Average cyclists by hour of day</p>
-          <Bar data={chartData} options={chartOptions} />
-        </div>
+        
         <div className="chart-container">
           <p className="chart-title">Average cyclists by day of week</p>
           <Bar data={dailyChartData} options={chartOptions} />
