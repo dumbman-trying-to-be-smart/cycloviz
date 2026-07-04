@@ -49,11 +49,15 @@
 }
 
 .sidebar-logo {
-  font-size: 18px;
-  font-weight: 500;
+  font-size: 22px;
+  font-weight: 700;
   padding-bottom: 12px;
   border-bottom: 0.5px solid #e0e0e0;
   margin-bottom: 12px;
+  color: #185FA5;
+  letter-spacing: -0.3px;
+  display: flex;
+  align-items: center;
 }
 
 .sidebar-section {
@@ -106,13 +110,22 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 12px;
+  align-items: start;
 }
+
 
 .stat-card {
   background: white;
   border-radius: 10px;
-  padding: 16px 20px;
+  padding: 16px;
   border: 0.5px solid #e8e8e8;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.stat-card:hover{
+  box-shadow: 0 4px 12px rgb(0, 0, 0, 0.08);
+  transform: translate(-1px);
 }
 
 .stat-card p {
@@ -124,13 +137,48 @@
 }
 
 .stat-card h3 {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 500;
   color: #111;
 }
 
+
 .stat-card.highlight h3 {
   color: #185FA5;
+}
+
+.stats-grid .stat-card:last-child {
+  grid-column: 1 / -1;
+  padding: 10px 20px;
+}
+
+.stats-grid .stat-card:last-child p {
+  margin: 0 0 2px 0;
+}
+
+.stats-grid .stat-card:last-child h3 {
+  font-size: 18px;
+  margin: 0;
+}
+
+.peak-hour-card {
+  grid-column: 1 / -1;
+  background: #EAF3F8 !important;
+  border: 0.5px solid #B5D4F4 !important;
+  padding: 10px 20px !important;
+}
+
+.peak-hour-card p {
+  margin: 0 0 2px 0 !important;
+  font-size: 11px;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.peak-hour-card h3 {
+  margin: 0 !important;
+  font-size: 18px !important;
 }
 
 .chart-container {
@@ -141,6 +189,7 @@
   height: 380px;
   position: relative;
 }
+
 
 .chart-title {
   font-size: 13px;
@@ -257,8 +306,15 @@
   justify-content: space-between;
   padding: 12px 16px;
   background: white;
-  border-radius: 8px;
+  border-radius: 0px;
+  border: none;
   border: 0.5px solid #e8e8e8;
+  border-left: 3px solid transparent;
+  transition: border-left-color 0.15s;
+}
+
+.cluster-item:hover{
+  background-color: #fafafa;
 }
 
 .cluster-street {
@@ -324,31 +380,6 @@
   position: relative;
 }
 
-.stat-card {
-  background: white;
-  border-radius: 10px;
-  padding: 16px;
-  border: 0.5px solid #e8e8e8;
-  min-width: 0;
-}
-
-.stat-card h3 {
-  font-size: 20px;
-  font-weight: 500;
-  color: #111;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.stat-card h3 {
-  font-size: 18px;
-  font-weight: 500;
-  color: #111;
-  white-space: normal;
-  word-break: break-word;
-}
-
 .cluster-group {
   border: 0.5px solid #e8e8e8;
   border-radius: 10px;
@@ -385,7 +416,7 @@
   color: #333;
 }
 
-.tab-btn:active{
+.tab-btn.active{
   color: #185FA5;
   border-bottom-color: #185FA5;
   font-weight: 500;

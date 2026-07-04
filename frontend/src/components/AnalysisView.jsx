@@ -303,6 +303,10 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
           <h3>{streetData.cluster}</h3>
           <span className="tooltip">{clusterDescriptions[streetData.cluster]}</span>
         </div>
+        <div className="stat-card peak-hour-card">
+          <p>Peak hour</p>
+          <h3>{peakHour.hour}:00 — {peakHour.avg_cyclists.toLocaleString()} cyclists</h3>
+        </div>
       </div>
       <div className="tab-bar">
         <button
@@ -326,20 +330,6 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
       </div>
       {activeTab === "traffic" &&(
         <>
-        <div className="stat-card" style={{ background: "#EAF3F8", border: "0.5px solid #B5D4F4" }}>
-          <p>Peak hour</p>
-          <h3>
-            {(() => {
-              let peakHour = hourlyData[0]
-              for (let i = 0; i < hourlyData.length; i++) {
-                if (hourlyData[i].avg_cyclists > peakHour.avg_cyclists) {
-                  peakHour = hourlyData[i]
-                }
-              }
-              return `${peakHour.hour}:00 — ${peakHour.avg_cyclists.toLocaleString()} cyclists`
-            })()}
-          </h3>
-        </div>
         <div className="chart-container">
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
             <p className="chart-title" style={{ margin: 0 }}>Average cyclists by hour of day</p>
