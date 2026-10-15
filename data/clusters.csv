@@ -1,14 +1,14 @@
 road_name,cluster,cluster_name
-Dr. Louises Bro ( ml. Nørrebrogade og Frederiksborggade),2,Afternoon Peak Route
-Ellebjergvej,0,Moderate Routes
-Englandsvej,0,Moderate Routes
-Fredensbro,1,Heavy Commuter Routes
-Frederikssundsvej,0,Moderate Routes
-Hareskovvej,3,Low Volume Routes
-Jagtvej,1,Heavy Commuter Routes
-Kalvebod Brygge,1,Heavy Commuter Routes
-Roskildevej,3,Low Volume Routes
-Torvegade,1,Heavy Commuter Routes
-Tuborgvej,3,Low Volume Routes
-Vigerslev Allé,1,Heavy Commuter Routes
-Åboulevard,1,Heavy Commuter Routes
+Dr. Louises Bro ( ml. Nørrebrogade og Frederiksborggade),1,Afternoon-Evening Route
+Ellebjergvej,3,Afternoon-Leaning Commuter Routes
+Englandsvej,3,Afternoon-Leaning Commuter Routes
+Fredensbro,0,Balanced Commuter Routes
+Frederikssundsvej,3,Afternoon-Leaning Commuter Routes
+Hareskovvej,2,Rush-Hour Route
+Jagtvej,0,Balanced Commuter Routes
+Kalvebod Brygge,0,Balanced Commuter Routes
+Roskildevej,3,Afternoon-Leaning Commuter Routes
+Torvegade,0,Balanced Commuter Routes
+Tuborgvej,3,Afternoon-Leaning Commuter Routes
+Vigerslev Allé,0,Balanced Commuter Routes
+Åboulevard,0,Balanced Commuter Routes

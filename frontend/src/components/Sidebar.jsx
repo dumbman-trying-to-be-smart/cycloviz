@@ -3,10 +3,10 @@ import { useState } from "react"
 const navItems = ["Map", "Analysis", "Compare", "Clusters"]
 const clusters = [
   { name: "All", color: "#888888" },
-  { name: "Heavy Commuter", color: "#185FA5" },
-  { name: "Afternoon Peak", color: "#0F6E56" },
-  { name: "Moderate", color: "#EF9F27" },
-  { name: "Low Volume", color: "#B4B2A9" },
+  { name: "Balanced Commuter", color: "#185FA5" },
+  { name: "Afternoon-Evening", color: "#0F6E56" },
+  { name: "Rush-Hour", color: "#EF9F27" },
+  { name: "Afternoon-Leaning", color: "#7B5EA7" },
 ]
 function Sidebar({activeNav, setActiveNav, selectedCluster, setSelectedCluster}) {
   

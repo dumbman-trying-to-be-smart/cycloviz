@@ -117,4 +117,19 @@ plt.xlabel("Avg no of cyclist")
 plt.ylabel("Street Names")
 plt.tight_layout()
 plt.savefig("data/plot_street.png")
-plt.show()
+#plt.show()
+
+df_clean["year"] = df_clean["date"].dt.year
+
+coverage = (
+    df_clean.groupby(["road_name", "year"]).size()
+    .unstack(fill_value=0)
+    .reindex(columns=range(2005, 2015), fill_value=0)  # force all years to show, even empty ones
+)
+
+# 24 hours x 365 days = 8760 possible hourly rows in a full year
+coverage_pct = (coverage / 8760 * 100).round(0)
+
+pd.set_option("display.width", 200)
+pd.set_option("display.max_columns", None)
+print(coverage_pct)
