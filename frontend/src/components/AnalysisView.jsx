@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import axios from "axios"
+import Loader from "./Loader"
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -79,39 +80,7 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
   )
 
   if (loading || !streetData || !hourlyData || !dailyData || !monthlyData) {
-    return (
-      <div className="spinner-container">
-        <svg width="150" height="75" viewBox="0 0 150 75" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <g className="w1">
-            <circle cx="34" cy="56" r="20" stroke="#185FA5" strokeWidth="2"/>
-            <circle cx="34" cy="56" r="14" stroke="#185FA5" strokeWidth="1" strokeDasharray="4 4"/>
-            <circle cx="34" cy="56" r="3" fill="#185FA5"/>
-          </g>
-          <g className="w2">
-            <circle cx="106" cy="56" r="20" stroke="#185FA5" strokeWidth="2"/>
-            <circle cx="106" cy="56" r="14" stroke="#185FA5" strokeWidth="1" strokeDasharray="4 4"/>
-            <circle cx="106" cy="56" r="3" fill="#185FA5"/>
-          </g>
-          <line x1="34" y1="56" x2="68" y2="56" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"/>
-          <line x1="68" y1="56" x2="62" y2="30" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"/>
-          <line x1="68" y1="56" x2="98" y2="32" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"/>
-          <line x1="62" y1="30" x2="98" y2="32" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"/>
-          <line x1="98" y1="32" x2="106" y2="56" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"/>
-          <line x1="62" y1="30" x2="34" y2="56" stroke="#185FA5" strokeWidth="1.5" strokeLinecap="round"/>
-          <circle cx="68" cy="56" r="3" fill="#185FA5"/>
-          <line x1="62" y1="30" x2="60" y2="20" stroke="#185FA5" strokeWidth="1.5" strokeLinecap="round"/>
-          <path d="M54 19 Q60 16 66 19" stroke="#185FA5" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-          <line x1="98" y1="32" x2="100" y2="22" stroke="#185FA5" strokeWidth="1.5" strokeLinecap="round"/>
-          <path d="M96 20 Q100 18 106 22" stroke="#185FA5" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-        </svg>
-        <div className="road">
-          <div className="rd"></div>
-          <div className="rd"></div>
-          <div className="rd"></div>
-        </div>
-        <div className="loading-text">Loading data</div>
-      </div>
-    )
+    return <Loader />
   }
   
 
@@ -174,10 +143,10 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
   const peakHour = hourlyData.reduce((max, d) => d.avg_cyclists > max.avg_cyclists ? d : max, hourlyData[0])
 
   const clusterDescriptions = {
-    "Heavy Commuter Routes": "High traffic roads used mainly for commuting",
-    "Afternoon Peak Route": "Roads that get busy in the afternoon",
-    "Moderate Routes": "Medium traffic, less busy than commuter roads",
-    "Low Volume Routes": "Quiet roads with few cyclists"
+    "Balanced Commuter Routes": "Morning and afternoon peaks of about equal size",
+    "Afternoon-Evening Route": "Small morning peak, large afternoon peak and busier evenings",
+    "Rush-Hour Route": "Sharp peaks around 07:00 and 16:00, very little traffic at night",
+    "Afternoon-Leaning Commuter Routes": "Commuter pattern with a slightly larger afternoon peak"
   }
 
   const rainChartData ={
@@ -251,6 +220,14 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
     }
     }
 
+  const withAxisTitles = (xTitle) => ({
+    ...chartOptions,
+    scales: {
+      x: { ...chartOptions.scales.x, title: { display: true, text: xTitle, color: "#999", font: { size: 12 } } },
+      y: { ...chartOptions.scales.y, title: { display: true, text: "Avg cyclists per hour", color: "#999", font: { size: 12 } } }
+    }
+  })
+
   return (
     <div className="analysis-container">
       <div className="analysis-header">
@@ -275,15 +252,18 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
         <div className="stat-card">
           <p>Avg cyclists per hour</p>
           <h3>{streetData.avg_cyclists_per_hour.toLocaleString()}</h3>
+          <p style={{ fontSize: "11px", color: "#999", textTransform: "none", letterSpacing: "normal", marginTop: "4px" }}>Cyclists passing in an average hour, over this sensor's recording period</p>
         </div>
         <div className="stat-card">
           <p>Daily total</p>
           <h3>{streetData.avg_daily_total.toLocaleString()}</h3>
+          <p style={{ fontSize: "11px", color: "#999", textTransform: "none", letterSpacing: "normal", marginTop: "4px" }}>Cyclists in an average day, over this sensor's recording period</p>
         </div>
         <div className="stat-card tooltip-card">
           <p>Cluster type</p>
           <h3>{streetData.cluster}</h3>
-          <span className="tooltip">{clusterDescriptions[streetData.cluster]}</span>
+          <p style={{ fontSize: "12px", color: "#777", textTransform: "none", letterSpacing: "normal", marginTop: "4px" }}>{clusterDescriptions[streetData.cluster]}</p>
+          <p style={{ fontSize: "11px", color: "#999", textTransform: "none", letterSpacing: "normal", marginTop: "4px" }}>Streets are grouped by the shape of their daily pattern, not by volume.</p>
         </div>
       </div>
       <div className="tab-bar">
@@ -303,7 +283,7 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
         className={activeTab == "trends" ? "tab-btn active" : "tab-btn"}
         onClick={() => setActiveTab("trends")}
         >
-          Trends
+          Weekday vs weekend
         </button>
       </div>
       {activeTab === "traffic" &&(
@@ -321,6 +301,7 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
               return `${peakHour.hour}:00 — ${peakHour.avg_cyclists.toLocaleString()} cyclists`
             })()}
           </h3>
+          <p style={{ fontSize: "11px", color: "#999", textTransform: "none", letterSpacing: "normal", marginTop: "4px" }}>The busiest hour of an average day (a label of 16:00 covers 16:00 to 17:00).</p>
         </div>
         <div className="chart-container">
           <div style ={{ display: "flex", justifyContent: "space-between", alignItems: "center"}}>
@@ -338,33 +319,40 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
               Export ↓
             </button>
           </div>
-          <Bar data={chartData} options={chartOptions} />
+          <p style={{ fontSize: "12px", color: "#777", margin: "4px 0 8px" }}>Each bar is one hour (08:00 means 08:00 to 09:00). Dark bars mark the usual rush hours at 08:00 and 16:00.</p>
+          <Bar data={chartData} options={withAxisTitles("Hour of day")} />
         </div>
         <div className="chart-container">
           <p className="chart-title">Average cyclists by day of week</p>
-          <Bar data={dailyChartData} options={chartOptions} />
+          <p style={{ fontSize: "12px", color: "#777", margin: "4px 0 8px" }}>Orange bars are weekend days.</p>
+          <Bar data={dailyChartData} options={withAxisTitles("Day of week")} />
         </div>
         <div className="chart-container">
           <p className="chart-title">Average cyclists by month</p>
-          <Bar data={monthlyChartData} options={chartOptions} />
+          <p style={{ fontSize: "12px", color: "#777", margin: "4px 0 8px" }}>Dark bars are the summer months (June to August).</p>
+          <Bar data={monthlyChartData} options={withAxisTitles("Month")} />
         </div>
         </>
       )}
 
       {activeTab === "weather" && (
         <>
+          <p style={{ fontSize: "12px", color: "#777", margin: "4px 0 8px" }}>These weather figures cover all 13 sensors, not only the selected street. Cold and wet days are more common in winter, so part of each difference may be due to the season.</p>
           <div className="weather-charts">
             <div className="chart-container-small">
               <p className="chart-title">Rain impact</p>
-              <Bar data={rainChartData} options={chartOptions} />
+              <p style={{ fontSize: "12px", color: "#777", margin: "4px 0 8px" }}>Dry: under 1 mm in the day. Light rain: 1 to 5 mm. Heavy rain: over 5 mm.</p>
+              <Bar data={rainChartData} options={withAxisTitles("Rainfall")} />
             </div>
             <div className="chart-container-small">
               <p className="chart-title">Temperature impact</p>
-              <Bar data={tempChartData} options={chartOptions} />
+              <p style={{ fontSize: "12px", color: "#777", margin: "4px 0 8px" }}>Daily mean. Cold: below 5 °C. Mild: 5 to 15 °C. Warm: above 15 °C.</p>
+              <Bar data={tempChartData} options={withAxisTitles("Temperature")} />
             </div>
             <div className="chart-container-small">
               <p className="chart-title">Wind impact</p>
-              <Bar data={windChartData} options={chartOptions} />
+              <p style={{ fontSize: "12px", color: "#777", margin: "4px 0 8px" }}>Daily maximum. Calm: below 15 km/h. Moderate: 15 to 30 km/h. Windy: above 30 km/h.</p>
+              <Bar data={windChartData} options={withAxisTitles("Wind speed")} />
             </div>
           </div> 
         </>
@@ -373,7 +361,7 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
         <>
         <div className="chart-container">
           <p className="chart-title">Weekday vs Weekend average</p>
-          <Bar data={weekdayweekendData} options={chartOptions} />
+          <Bar data={weekdayweekendData} options={withAxisTitles("Day type")} />
         </div>
         </>
       )} 

@@ -1,5 +1,6 @@
 import { useState,useEffect } from "react"
 import axios from "axios"
+import Loader from "./Loader"
 import { Bar } from "react-chartjs-2"
 import {
   Chart as ChartJS,
@@ -27,6 +28,21 @@ const streets = [
   { label: "Hareskovvej", value: "Hareskovvej" },
   { label: "Roskildevej", value: "Roskildevej" },
 ]
+
+const RUSH_HOURS = [7, 8, 9, 15, 16, 17]
+
+function getShapeStats(hourly) {
+    const total = hourly.reduce((sum, d) => sum + d.avg_cyclists, 0)
+    if (hourly.length === 0 || total === 0) return { peakHour: "-", rushShare: "-" }
+    const peak = hourly.reduce((best, d) => d.avg_cyclists > best.avg_cyclists ? d : best, hourly[0])
+    const rush = hourly
+        .filter(d => RUSH_HOURS.includes(Number(d.hour)))
+        .reduce((sum, d) => sum + d.avg_cyclists, 0)
+    return {
+        peakHour: `${String(peak.hour).padStart(2, "0")}:00`,
+        rushShare: `${Math.round((rush / total) * 100)}%`
+    }
+}
 
 function CompareView(){
 
@@ -70,41 +86,11 @@ function CompareView(){
   
 
   if (loading)
-    return (
-        <div className="spinner-container">
-        <svg width="150" height="75" viewBox="0 0 150 75" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <g className="w1">
-            <circle cx="34" cy="56" r="20" stroke="#185FA5" strokeWidth="2"/>
-            <circle cx="34" cy="56" r="14" stroke="#185FA5" strokeWidth="1" strokeDasharray="4 4"/>
-            <circle cx="34" cy="56" r="3" fill="#185FA5"/>
-            </g>
-            <g className="w2">
-            <circle cx="106" cy="56" r="20" stroke="#185FA5" strokeWidth="2"/>
-            <circle cx="106" cy="56" r="14" stroke="#185FA5" strokeWidth="1" strokeDasharray="4 4"/>
-            <circle cx="106" cy="56" r="3" fill="#185FA5"/>
-            </g>
-            <line x1="34" y1="56" x2="68" y2="56" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"/>
-            <line x1="68" y1="56" x2="62" y2="30" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"/>
-            <line x1="68" y1="56" x2="98" y2="32" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"/>
-            <line x1="62" y1="30" x2="98" y2="32" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"/>
-            <line x1="98" y1="32" x2="106" y2="56" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"/>
-            <line x1="62" y1="30" x2="34" y2="56" stroke="#185FA5" strokeWidth="1.5" strokeLinecap="round"/>
-            <circle cx="68" cy="56" r="3" fill="#185FA5"/>
-            <line x1="62" y1="30" x2="60" y2="20" stroke="#185FA5" strokeWidth="1.5" strokeLinecap="round"/>
-            <path d="M54 19 Q60 16 66 19" stroke="#185FA5" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-            <line x1="98" y1="32" x2="100" y2="22" stroke="#185FA5" strokeWidth="1.5" strokeLinecap="round"/>
-            <path d="M96 20 Q100 18 106 22" stroke="#185FA5" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-        </svg>
-        <div className="road">
-            <div className="rd"></div>
-            <div className="rd"></div>
-            <div className="rd"></div>
-        </div>
-        <div className="loading-text">Loading data</div>
-        </div>
-    )
+    return <Loader />
     const maxA = Math.max(...hourlyDataA.map(d => d.avg_cyclists))
     const maxB = Math.max(...hourlyDataB.map(d => d.avg_cyclists))
+    const shapeA = getShapeStats(hourlyDataA)
+    const shapeB = getShapeStats(hourlyDataB)
 
     const chartData = {
         labels: hourlyDataA.map(d => `${d.hour}:00`),
@@ -155,10 +141,12 @@ function CompareView(){
             x: {
             grid: { display: false },
             stacked: true,
-            ticks: { font: { size: 11 }, color: "#999" }
+            ticks: { font: { size: 11 }, color: "#999" },
+            title: { display: true, text: "Hour of day", color: "#999", font: { size: 12 }}
             },
             y: {
             stacked: false,
+            title: { display: true, text: "Avg cyclists per hour (each street on its own scale)", color: "#999", font: { size: 12 } },
             ticks: {
                 callback: (value) => {
                 if (value >= 0) return value.toLocaleString()
@@ -198,16 +186,23 @@ function CompareView(){
                 <span className="street-name">{streetDataA.street}</span>
                 </div>
                 <div className="compare-stat">
-                <p>Avg cyclists per hour</p>
-                <h3>{streetDataA.avg_cyclists_per_hour.toLocaleString()}</h3>
-                </div>
-                <div className="compare-stat">
-                <p>Daily total</p>
-                <h3>{streetDataA.avg_daily_total.toLocaleString()}</h3>
-                </div>
-                <div className="compare-stat">
                 <p>Cluster type</p>
                 <h3>{streetDataA.cluster}</h3>
+                </div>
+                <div className="compare-stat">
+                <p>Peak hour</p>
+                <h3>{shapeA.peakHour}</h3>
+                </div>
+                <div className="compare-stat">
+                <p>Traffic in rush hours</p>
+                <h3>{shapeA.rushShare}</h3>
+                <p style={{ fontSize: "11px", color: "#999", textTransform: "none", letterSpacing: "normal" }}>07:00-09:00 and 15:00-17:00</p>
+                </div>
+                <div className="compare-stat">
+                <p style={{ fontSize: "11px", color: "#999", textTransform: "none", letterSpacing: "normal" }}>Volume, averaged over this sensor's recording period</p>
+                <p style={{ fontSize: "13px", color: "#666", textTransform: "none", letterSpacing: "normal" }}>
+                    {streetDataA.avg_cyclists_per_hour.toLocaleString()} cyclists per hour · {streetDataA.avg_daily_total.toLocaleString()} per day
+                </p>
                 </div>
             </div>
 
@@ -217,21 +212,33 @@ function CompareView(){
                 <span className="street-name">{streetDataB.street}</span>
                 </div>
                 <div className="compare-stat">
-                <p>Avg cyclists per hour</p>
-                <h3>{streetDataB.avg_cyclists_per_hour.toLocaleString()}</h3>
-                </div>
-                <div className="compare-stat">
-                <p>Daily total</p>
-                <h3>{streetDataB.avg_daily_total.toLocaleString()}</h3>
-                </div>
-                <div className="compare-stat">
                 <p>Cluster type</p>
                 <h3>{streetDataB.cluster}</h3>
                 </div>
+                <div className="compare-stat">
+                <p>Peak hour</p>
+                <h3>{shapeB.peakHour}</h3>
+                </div>
+                <div className="compare-stat">
+                <p>Traffic in rush hours</p>
+                <h3>{shapeB.rushShare}</h3>
+                <p style={{ fontSize: "11px", color: "#999", textTransform: "none", letterSpacing: "normal" }}>07:00-09:00 and 15:00-17:00</p>
+                </div>
+                <div className="compare-stat">
+                <p style={{ fontSize: "11px", color: "#999", textTransform: "none", letterSpacing: "normal" }}>Volume, averaged over this sensor's recording period</p>
+                <p style={{ fontSize: "13px", color: "#666", textTransform: "none", letterSpacing: "normal" }}>
+                    {streetDataB.avg_cyclists_per_hour.toLocaleString()} cyclists per hour · {streetDataB.avg_daily_total.toLocaleString()} per day
+                </p>
+                </div>
             </div>
+            </div>
+            <div style={{ fontSize: "12px", color: "#777", margin: "12px 0", lineHeight: 1.5 }}>
+                <p style={{ margin: 0 }}>Each sensor was recording over different years, so volumes are only a rough guide when comparing streets.</p>
+                <p style={{ margin: "4px 0 0" }}>The bars for Street B are scaled to match Street A's peak, so compare the shapes, not the heights.</p>
             </div>
             <div className="chart-container">
                 <p className="chart-title">Hourly comparison</p>
+                <p style={{ fontSize: "12px", color: "#777", margin: "4px 0 8px" }}>Street A (blue) points up and Street B (orange) points down. Compare when each street is busy, not how tall the bars are.</p>
                 <Bar data={chartData} options={chartOptions} />
             </div>
     </div>
