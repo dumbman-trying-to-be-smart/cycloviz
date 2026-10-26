@@ -1,6 +1,6 @@
 import { useState,useEffect} from "react"
 import axios from "axios"
-import Loader from "./Loader"
+import Loader from "./loader"
 
 const clusterGroups = [
   { name: "Balanced Commuter Routes", color: "#185FA5", bg: "#E6F1FB", description: "Morning and afternoon peaks of about equal size" },

@@ -1,6 +1,6 @@
 import { useState,useEffect } from "react"
 import axios from "axios"
-import Loader from "./Loader"
+import Loader from "./loader"
 import { Bar } from "react-chartjs-2"
 import {
   Chart as ChartJS,
