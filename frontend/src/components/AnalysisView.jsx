@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import axios from "axios"
-import Loader from "./Loader"
+import Loader from "./Loader.jsx"
 import {
   Chart as ChartJS,
   CategoryScale,
