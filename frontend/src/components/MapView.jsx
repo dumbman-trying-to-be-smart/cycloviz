@@ -19,7 +19,7 @@ const circleLayer = {
   }
 }
 
-function MapView({setActiveNav, setSelectedStreet, selectedCluster}) {
+function MapView({setActiveNav, setSelectedStreet}) {
   const [hoveredSensor, setHoveredSensor] = useState(null)
   const [sensors, setSensors] = useState([])
   const [error, setError] = useState(false)
@@ -31,13 +31,13 @@ function MapView({setActiveNav, setSelectedStreet, selectedCluster}) {
       .catch(() => setError(true))
   }, [])
 
-  const filteredSensors = selectedCluster === "All"
-    ? sensors
-    : sensors.filter(s => s.cluster_name === selectedCluster)
+  // Legend: one entry per cluster present on the map
+  const legend = [...new Set(sensors.map(s => s.cluster_name))]
+    .map(name => ({ name, ...clusterStyle(name) }))
 
   const geojson = {
       type: 'FeatureCollection',
-      features: filteredSensors.map(sensor => ({
+      features: sensors.map(sensor => ({
         type: 'Feature',
         geometry: {
           type: 'Point',
@@ -59,6 +59,17 @@ function MapView({setActiveNav, setSelectedStreet, selectedCluster}) {
         {error
           ? "Could not load sensor data. Please try again later."
           : "Loading sensors… (the server may take up to 30 seconds to wake up)"}
+      </div>
+    )}
+    {legend.length > 0 && (
+      <div className="map-legend">
+        <div className="map-legend-title">Traffic pattern</div>
+        {legend.map(item => (
+          <div key={item.name} className="map-legend-row">
+            <span className="map-legend-dot" style={{ background: item.color }}></span>
+            {item.short}
+          </div>
+        ))}
       </div>
     )}
     <Map
