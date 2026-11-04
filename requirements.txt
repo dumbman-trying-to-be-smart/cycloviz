@@ -1,0 +1,4 @@
+# Backend API (backend/main.py)
+fastapi
+uvicorn[standard]
+pandas

@@ -1,0 +1,8 @@
+# Extra packages for the analysis scripts (clustering.py, compare.py, explore.py, weather.py, ...)
+-r requirements.txt
+numpy
+scikit-learn
+scipy
+matplotlib
+seaborn
+requests
