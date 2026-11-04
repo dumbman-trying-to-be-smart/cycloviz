@@ -1,10 +1,15 @@
 from fastapi import FastAPI, HTTPException
 import pandas as pd
 from fastapi.middleware.cors import CORSMiddleware
+try:
+    from backend.geo import utm_to_latlng   # started as "uvicorn backend.main:app"
+except ImportError:
+    from geo import utm_to_latlng           # started from inside backend/
 
 # cycling dataset
 df = pd.read_csv("data/total_rides.csv")
 cluster= pd.read_csv("data/clusters.csv")
+road_info = pd.read_csv("data/road_info.csv")
 df_clean = df.dropna()
 
 df_clean["hour"] = df_clean["time"].str.split("-").str[0].astype(int)
@@ -165,6 +170,22 @@ def get_yearly(street_name: str):
     yearly.columns =["year", "avg_cyclists"]
     yearly = yearly[yearly["avg_cyclists"] > 500]
     return {"yearly": yearly.to_dict("records")}
+
+@app.get("/map")
+def get_map():
+    """Every sensor with its position, cluster and average cyclists per hour (used by the map)."""
+    points = []
+    for _, row in road_info.iterrows():
+        street_data = df_clean[df_clean["road_name"] == row["road_name"]]
+        lat, lng = utm_to_latlng(row["x_coord"], row["y_coord"])
+        points.append({
+            "road_name": row["road_name"],
+            "lat": round(lat, 5),
+            "lng": round(lng, 5),
+            "cluster_name": get_cluster_name(row["road_name"]),
+            "avg_cyclists_per_hour": int(round(street_data["n"].mean())) if not street_data.empty else None,
+        })
+    return {"sensors": points}
 
 @app.get("/health")
 def health():

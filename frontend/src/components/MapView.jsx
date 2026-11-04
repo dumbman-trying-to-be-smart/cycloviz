@@ -1,25 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Map, { Source, Layer, Popup } from 'react-map-gl/maplibre'
 import 'maplibre-gl/dist/maplibre-gl.css'
+import axios from "axios"
+import { API_URL } from "../api.js"
+import { clusterStyle } from "../clusters.js"
 
 const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY
-
-const sensors = [
-  { name: "Torvegade",         lat: 55.6736, lng: 12.5771, cluster: "Balanced Commuter", color: "#185FA5", avg: 817 },
-  { name: "Åboulevard",        lat: 55.6868, lng: 12.5476, cluster: "Balanced Commuter", color: "#185FA5", avg: 388 },
-  { name: "Jagtvej",           lat: 55.7000, lng: 12.5511, cluster: "Balanced Commuter", color: "#185FA5", avg: 415 },
-  { name: "Fredensbro",        lat: 55.6895, lng: 12.5561, cluster: "Balanced Commuter", color: "#185FA5", avg: 226 },
-  { name: "Kalvebod Brygge",   lat: 55.6677, lng: 12.5650, cluster: "Balanced Commuter", color: "#185FA5", avg: 90  },
-  { name: "Vigerslev Allé",    lat: 55.6629, lng: 12.5198, cluster: "Balanced Commuter", color: "#185FA5", avg: 120 },
-  { name: "Dr. Louises Bro ( ml. Nørrebrogade og Frederiksborggade)",   lat: 55.6872, lng: 12.5701, cluster: "Afternoon-Evening", color: "#0F6E56", avg: 476 },
-  { name: "Englandsvej",       lat: 55.6478, lng: 12.5945, cluster: "Afternoon-Leaning", color: "#7B5EA7", avg: 59  },
-  { name: "Ellebjergvej",      lat: 55.6558, lng: 12.5148, cluster: "Afternoon-Leaning", color: "#7B5EA7", avg: 75  },
-  { name: "Frederikssundsvej", lat: 55.7057, lng: 12.5042, cluster: "Afternoon-Leaning", color: "#7B5EA7", avg: 418 },
-  { name: "Tuborgvej",         lat: 55.7297, lng: 12.5680, cluster: "Afternoon-Leaning", color: "#7B5EA7", avg: 116 },
-  { name: "Hareskovvej",       lat: 55.7405, lng: 12.4367, cluster: "Rush-Hour", color: "#EF9F27", avg: 80  },
-  { name: "Roskildevej",       lat: 55.6687, lng: 12.4936, cluster: "Afternoon-Leaning", color: "#7B5EA7", avg: 135 },
-]
-
 
 const circleLayer = {
   id: 'sensors',
@@ -35,11 +21,20 @@ const circleLayer = {
 
 function MapView({setActiveNav, setSelectedStreet, selectedCluster}) {
   const [hoveredSensor, setHoveredSensor] = useState(null)
-  
-  const filteredSensors = selectedCluster ==="All"
-  ? sensors
-  :sensors.filter(s => s.cluster === selectedCluster)
-  
+  const [sensors, setSensors] = useState([])
+  const [error, setError] = useState(false)
+
+  // Positions, clusters and averages all come from the backend (/map)
+  useEffect(() => {
+    axios.get(`${API_URL}/map`)
+      .then(res => setSensors(res.data.sensors))
+      .catch(() => setError(true))
+  }, [])
+
+  const filteredSensors = selectedCluster === "All"
+    ? sensors
+    : sensors.filter(s => s.cluster_name === selectedCluster)
+
   const geojson = {
       type: 'FeatureCollection',
       features: filteredSensors.map(sensor => ({
@@ -49,18 +44,26 @@ function MapView({setActiveNav, setSelectedStreet, selectedCluster}) {
           coordinates: [sensor.lng, sensor.lat]
         },
         properties: {
-          name: sensor.name,
-          cluster: sensor.cluster,
-          avg: sensor.avg,
-          color: sensor.color
+          name: sensor.road_name,
+          cluster: sensor.cluster_name,
+          avg: sensor.avg_cyclists_per_hour,
+          color: clusterStyle(sensor.cluster_name).color
         }
       }))
     }
 
   return (
+    <div style={{ position: 'relative' }}>
+    {(error || sensors.length === 0) && (
+      <div className="map-status">
+        {error
+          ? "Could not load sensor data. Please try again later."
+          : "Loading sensors… (the server may take up to 30 seconds to wake up)"}
+      </div>
+    )}
     <Map
       initialViewState={{
-        longitude: 12.5559,  // ✅ centered on Copenhagen
+        longitude: 12.5559,  // centered on Copenhagen
         latitude: 55.6867,
         zoom: 11
       }}
@@ -72,7 +75,7 @@ function MapView({setActiveNav, setSelectedStreet, selectedCluster}) {
         if (feature) {
           setSelectedStreet(feature.properties.name)
           setActiveNav("Analysis")
-        } 
+        }
       }}
       onMouseEnter={e => {
         const feature = e.features?.[0]
@@ -105,6 +108,7 @@ function MapView({setActiveNav, setSelectedStreet, selectedCluster}) {
         </Popup>
       )}
     </Map>
+    </div>
   )
 }
 

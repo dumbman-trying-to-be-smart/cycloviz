@@ -2,15 +2,7 @@ import Loader from "./Loader.jsx"
 import { useState,useEffect} from "react"
 import axios from "axios"
 import { API_URL } from "../api.js"
-const clusterGroups = [
-  { name: "Balanced Commuter Routes", color: "#185FA5", bg: "#E6F1FB", description: "Morning and afternoon peaks of about equal size" },
-  { name: "Afternoon-Evening Route", color: "#085041", bg: "#E6F4EE", description: "Small morning peak, large afternoon peak and busier evenings" },
-  { name: "Rush-Hour Route", color: "#7A4F00", bg: "#FEF6E4", description: "Sharp peaks around 07:00 and 16:00, very little traffic at night" },
-  { name: "Afternoon-Leaning Commuter Routes", color: "#4B3478", bg: "#EFEAF8", description: "Commuter pattern with a slightly larger afternoon peak" },
-]
-
-
-
+import { clusterStyle } from "../clusters.js"
 
 function ClustersView(){
 
@@ -41,13 +33,17 @@ function ClustersView(){
     if (loading)
     return <Loader />
 
+    // One group per cluster name found in the data, in order of first appearance
+    const clusterGroups = [...new Set(clusters.map(item => item.cluster_name))]
+      .map(name => ({ name, ...clusterStyle(name) }))
+
     return (
   <div className="cluster-container">
     <h2>Street Clusters</h2>
     <p style={{ fontSize: "13px", color: "#777", margin: "0 0 16px" }}>Streets are grouped by the shape of their daily traffic pattern (when they are busy), not by how many cyclists they carry.</p>
     {clusterGroups.map(group => (
       <div key={group.name} className="cluster-group">
-        <div className="cluster-group-header" style={{ background: group.bg, color: group.color }}>
+        <div className="cluster-group-header" style={{ background: group.bg, color: group.text }}>
           {group.name}
         </div>
         <p style={{ fontSize: "12px", color: "#777", margin: "6px 12px" }}>{group.description}</p>

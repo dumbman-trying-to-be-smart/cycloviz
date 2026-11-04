@@ -1,11 +1,10 @@
+import { CLUSTER_STYLES } from "../clusters.js"
 
 const navItems = ["Map", "Analysis", "Compare", "Clusters"]
+// "name" is the full cluster name used in the data; "label" is the shorter text on the button
 const clusters = [
-  { name: "All", color: "#888888" },
-  { name: "Balanced Commuter", color: "#185FA5" },
-  { name: "Afternoon-Evening", color: "#0F6E56" },
-  { name: "Rush-Hour", color: "#EF9F27" },
-  { name: "Afternoon-Leaning", color: "#7B5EA7" },
+  { name: "All", label: "All", color: "#888888" },
+  ...Object.entries(CLUSTER_STYLES).map(([name, style]) => ({ name, label: style.short, color: style.color })),
 ]
 function Sidebar({activeNav, setActiveNav, selectedCluster, setSelectedCluster}) {
   
@@ -41,7 +40,7 @@ function Sidebar({activeNav, setActiveNav, selectedCluster, setSelectedCluster})
               background: cluster.color,
               marginRight: "8px"
             }}></span>
-            {cluster.name}
+            {cluster.label}
           </button>
         ))}
       </div>

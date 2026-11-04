@@ -137,6 +137,7 @@ npm run preview    # serves the built app locally
 | GET    | `/sensors/{street}/monthly`       | Average cyclists by month                           |
 | GET    | `/sensors/{street}/yearly`        | Average daily total by year                         |
 | GET    | `/compare?street_a=…&street_b=…`  | Summary statistics for two streets                  |
+| GET    | `/map`                            | Every sensor with its position, cluster and average cyclists per hour (used by the map) |
 | GET    | `/clusters`                       | Every street with its cluster name                  |
 | GET    | `/cluster/{cluster_name}`         | Streets in one cluster                              |
 | GET    | `/weather/impact`                 | Average cyclists per hour by rain, temperature and wind category |

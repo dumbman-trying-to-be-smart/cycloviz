@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import axios from "axios"
 import { API_URL } from "../api.js"
+import { clusterStyle } from "../clusters.js"
 import Loader from "./Loader.jsx"
 import {
   Chart as ChartJS,
@@ -143,13 +144,6 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
   }
 
 
-  const clusterDescriptions = {
-    "Balanced Commuter Routes": "Morning and afternoon peaks of about equal size",
-    "Afternoon-Evening Route": "Small morning peak, large afternoon peak and busier evenings",
-    "Rush-Hour Route": "Sharp peaks around 07:00 and 16:00, very little traffic at night",
-    "Afternoon-Leaning Commuter Routes": "Commuter pattern with a slightly larger afternoon peak"
-  }
-
   const rainChartData ={
     labels: ["Dry", "Light Rain", "Heavy Rain"],
     datasets: [{
@@ -263,7 +257,7 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
         <div className="stat-card tooltip-card">
           <p>Cluster type</p>
           <h3>{streetData.cluster}</h3>
-          <p style={{ fontSize: "12px", color: "#777", textTransform: "none", letterSpacing: "normal", marginTop: "4px" }}>{clusterDescriptions[streetData.cluster]}</p>
+          <p style={{ fontSize: "12px", color: "#777", textTransform: "none", letterSpacing: "normal", marginTop: "4px" }}>{clusterStyle(streetData.cluster).description}</p>
           <p style={{ fontSize: "11px", color: "#999", textTransform: "none", letterSpacing: "normal", marginTop: "4px" }}>Streets are grouped by the shape of their daily pattern, not by volume.</p>
         </div>
       </div>
