@@ -1,4 +1,3 @@
-import { useState } from "react"
 
 const navItems = ["Map", "Analysis", "Compare", "Clusters"]
 const clusters = [

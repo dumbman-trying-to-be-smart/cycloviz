@@ -1,7 +1,7 @@
+import Loader from "./Loader.jsx"
 import { useState,useEffect} from "react"
 import axios from "axios"
-import Loader from "./Loader.jsx"
-
+import { API_URL } from "../api.js"
 const clusterGroups = [
   { name: "Balanced Commuter Routes", color: "#185FA5", bg: "#E6F1FB", description: "Morning and afternoon peaks of about equal size" },
   { name: "Afternoon-Evening Route", color: "#085041", bg: "#E6F4EE", description: "Small morning peak, large afternoon peak and busier evenings" },
@@ -9,13 +9,6 @@ const clusterGroups = [
   { name: "Afternoon-Leaning Commuter Routes", color: "#4B3478", bg: "#EFEAF8", description: "Commuter pattern with a slightly larger afternoon peak" },
 ]
 
-function getClusterColor(clusterName) {
-  if (clusterName === "Balanced Commuter Routes") return { bg: "#E6F1FB", color: "#1B3A5C" }
-  if (clusterName === "Afternoon-Evening Route") return { bg: "#E6F4EE", color: "#085041" }
-  if (clusterName === "Rush-Hour Route") return { bg: "#FEF6E4", color: "#7A4F00" }
-  if (clusterName === "Afternoon-Leaning Commuter Routes") return { bg: "#EFEAF8", color: "#4B3478" }
-  return { bg: "#EAF3F8", color: "#1B3A5C" }
-}
 
 
 
@@ -27,7 +20,7 @@ function ClustersView(){
 
     useEffect(() => {
         setLoading(true)
-        axios.get(`https://cycloviz-backend.onrender.com/clusters`)
+        axios.get(`${API_URL}/clusters`)
         .then((res) => {
             setClusters(res.data.cluster)
             setLoading(false)

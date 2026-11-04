@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 import pandas as pd
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -29,6 +29,11 @@ df_weather["temp_category"] = df_weather["temperature_2m_mean"].apply(
     else "Warm"
 )
 
+def get_cluster_name(street_name):
+    """Cluster name for a street, or None if the street is not in clusters.csv."""
+    match = cluster.loc[cluster["road_name"] == street_name, "cluster_name"]
+    return match.iloc[0] if not match.empty else None
+
 app = FastAPI()
 
 app.add_middleware(
@@ -54,7 +59,7 @@ def get_street(street_name: str):
 
     #check if street exists
     if street_data.empty:
-        return {"error": "Street not found"}
+        raise HTTPException(status_code=404, detail="Street not found")
     
     # Calculate average cyclists
     avg_cyclists= round(street_data["n"].mean())
@@ -62,7 +67,7 @@ def get_street(street_name: str):
     # Calculate total daily average
     daily_avg = round(street_data.groupby("date")["n"].sum().mean())
 
-    category = cluster[cluster["road_name"] == street_name]["cluster_name"].iloc[0]
+    category = get_cluster_name(street_name)
     return {
         "street": street_name,
         "avg_cyclists_per_hour": avg_cyclists,
@@ -80,7 +85,7 @@ def get_category(cluster_name: str):
     cluster_data = cluster[cluster["cluster_name"]== cluster_name]
 
     if cluster_data.empty:
-        return {"Error": "No cluster found."}
+        raise HTTPException(status_code=404, detail="Cluster not found")
     
     return {"street_names": cluster_data["road_name"].to_list()}
 
@@ -90,12 +95,12 @@ def compare_streets(street_a: str, street_b: str):
     for key, street in [("street_a", street_a), ("street_b", street_b)]:
         data = df_clean[df_clean["road_name"] == street]
         if data.empty:
-            return {"error": f"{street} not found"}
+            raise HTTPException(status_code=404, detail=f"{street} not found")
         result[key] = {
             "street": street,
             "avg_cyclists_per_hour": round(data["n"].mean()),
             "avg_daily_total": round(data.groupby("date")["n"].sum().mean()),
-            "cluster": cluster[cluster["road_name"] == street]["cluster_name"].iloc[0]
+            "cluster": get_cluster_name(street)
         }
     return result
 
@@ -104,7 +109,7 @@ def get_hourly(street_name:str):
     street_data = df_clean[df_clean["road_name"] == street_name]
 
     if street_data.empty:
-        return {"error": "Street not found "}
+        raise HTTPException(status_code=404, detail="Street not found")
     
     hourly= street_data.groupby("hour")["n"].mean().round().astype(int)
     hourly= hourly.reset_index()
@@ -116,7 +121,7 @@ def get_hourly(street_name:str):
 def get_daily(street_name:str):
     street_data = df_clean[df_clean["road_name"] == street_name]
     if street_data.empty:
-        return {"error": "Street not found"}
+        raise HTTPException(status_code=404, detail="Street not found")
     
     daily = street_data.groupby("day")["n"].mean().round().astype(int)
     daily=daily.reset_index()
@@ -127,7 +132,7 @@ def get_daily(street_name:str):
 def get_monthly(street_name: str):
     street_data =df_clean[df_clean["road_name"] == street_name]
     if street_data.empty:
-        return {"error": "Street not found"}
+        raise HTTPException(status_code=404, detail="Street not found")
     
 
     monthly = street_data.groupby("month")["n"].mean().round().astype(int)
@@ -154,7 +159,7 @@ def get_weather_impact():
 def get_yearly(street_name: str):
     street_data = df_clean[df_clean["road_name"]== street_name]
     if street_data.empty:
-        return {"error": "Street not found"}
+        raise HTTPException(status_code=404, detail="Street not found")
     daily_total = street_data.groupby(["year", "date"])["n"].sum().reset_index()
     yearly = daily_total.groupby("year")["n"].mean().round().astype(int).reset_index()
     yearly.columns =["year", "avg_cyclists"]

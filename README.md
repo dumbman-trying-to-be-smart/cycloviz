@@ -109,9 +109,13 @@ npm run dev
 
 Open <http://localhost:5173> in your browser.
 
-> **Note:** the frontend currently sends its requests to the deployed backend at
-> `https://cycloviz-backend.onrender.com`. That URL is hardcoded in the components in `frontend/src/components/`.
-> To use your local backend instead, replace it with `http://localhost:8000`.
+> **Note:** by default the frontend uses the deployed backend at `https://cycloviz-backend.onrender.com`.
+> To use your local backend instead, add this line to `frontend/.env` and restart `npm run dev`:
+>
+> ```
+> VITE_API_URL=http://localhost:8000
+> ```
+>
 > The deployed backend runs on Render's free plan and sleeps when no one uses it, so the first request can take up to 30 seconds.
 
 ### Build for production

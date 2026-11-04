@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import axios from "axios"
+import { API_URL } from "../api.js"
 import Loader from "./Loader.jsx"
 import {
   Chart as ChartJS,
@@ -50,12 +51,13 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
 
   useEffect(() => {
     setLoading(true)
+    setError(false)
     Promise.all([
-      axios.get(`https://cycloviz-backend.onrender.com/sensors/${encodeURIComponent(selectedStreet)}`),
-      axios.get(`https://cycloviz-backend.onrender.com/sensors/${encodeURIComponent(selectedStreet)}/hourly`),
-      axios.get(`https://cycloviz-backend.onrender.com/sensors/${encodeURIComponent(selectedStreet)}/daily`),
-      axios.get(`https://cycloviz-backend.onrender.com/sensors/${encodeURIComponent(selectedStreet)}/monthly`),
-      axios.get(`https://cycloviz-backend.onrender.com/weather/impact`)
+      axios.get(`${API_URL}/sensors/${encodeURIComponent(selectedStreet)}`),
+      axios.get(`${API_URL}/sensors/${encodeURIComponent(selectedStreet)}/hourly`),
+      axios.get(`${API_URL}/sensors/${encodeURIComponent(selectedStreet)}/daily`),
+      axios.get(`${API_URL}/sensors/${encodeURIComponent(selectedStreet)}/monthly`),
+      axios.get(`${API_URL}/weather/impact`)
     ]).then(([streetRes, hourlyRes, dailyRes, monthlyRes,weatherRes]) => {
       setStreetData(streetRes.data)
       setHourlyData(hourlyRes.data.hourly)
@@ -87,7 +89,7 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
   const chartData = {
     labels: hourlyData.map(d => `${d.hour}:00`),
     datasets: [{
-    labels: "Avg cyclists",
+    label: "Avg cyclists",
     data: hourlyData.map(d => d.avg_cyclists),
     backgroundColor: hourlyData.map(d =>
         d.hour === 8 || d.hour === 16 ? "#185FA5" : "#B5D4F4"
@@ -140,7 +142,6 @@ function AnalysisView({selectedStreet,setSelectedStreet}) {
     }]
   }
 
-  const peakHour = hourlyData.reduce((max, d) => d.avg_cyclists > max.avg_cyclists ? d : max, hourlyData[0])
 
   const clusterDescriptions = {
     "Balanced Commuter Routes": "Morning and afternoon peaks of about equal size",

@@ -1,5 +1,6 @@
 import { useState,useEffect } from "react"
 import axios from "axios"
+import { API_URL } from "../api.js"
 import Loader from "./Loader.jsx"
 import { Bar } from "react-chartjs-2"
 import {
@@ -57,12 +58,13 @@ function CompareView(){
 
     useEffect(() => {
         setLoading(true)
+        setError(false)
 
         Promise.all([
-            axios.get(`https://cycloviz-backend.onrender.com/sensors/${encodeURIComponent(selectedStreetA)}`),
-            axios.get(`https://cycloviz-backend.onrender.com/sensors/${encodeURIComponent(selectedStreetB)}`),
-            axios.get(`https://cycloviz-backend.onrender.com/sensors/${encodeURIComponent(selectedStreetA)}/hourly`),
-            axios.get(`https://cycloviz-backend.onrender.com/sensors/${encodeURIComponent(selectedStreetB)}/hourly`)
+            axios.get(`${API_URL}/sensors/${encodeURIComponent(selectedStreetA)}`),
+            axios.get(`${API_URL}/sensors/${encodeURIComponent(selectedStreetB)}`),
+            axios.get(`${API_URL}/sensors/${encodeURIComponent(selectedStreetA)}/hourly`),
+            axios.get(`${API_URL}/sensors/${encodeURIComponent(selectedStreetB)}/hourly`)
         ]).then(([streetResA, streetResB, hourlyResA, hourlyResB]) => {
       setStreetDataA(streetResA.data)
       setStreetDataB(streetResB.data)
