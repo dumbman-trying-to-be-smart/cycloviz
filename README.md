@@ -118,6 +118,15 @@ Open <http://localhost:5173> in your browser.
 >
 > The deployed backend runs on Render's free plan and sleeps when no one uses it, so the first request can take up to 30 seconds.
 
+### Run the tests
+
+From the project root, with the virtual environment active:
+
+```bash
+pip install pytest httpx
+python -m pytest tests
+```
+
 ### Build for production
 
 ```bash

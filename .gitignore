@@ -5,3 +5,4 @@ venv/
 __pycache__/
 *.pyc
 desktop.ini
+.pytest_cache/
